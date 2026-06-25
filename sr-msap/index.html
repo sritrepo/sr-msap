@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>General Application — Sphere Rocket VA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --brand-dark:         #0A1628;
+    --brand-primary:      #1E3A5F;
+    --brand-accent:       #591DA9;
+    --brand-accent-light: #F0E8FF;
+    --brand-sky:          #F0E8FF;
+    --text-primary:       #0F172A;
+    --text-secondary:     #475569;
+    --text-muted:         #94A3B8;
+    --border:             #E2E8F0;
+    --surface:            #FFFFFF;
+    --surface-alt:        #F8FAFC;
+    --success:            #16A34A;
+    --error:              #DC2626;
+    --radius:             10px;
+    --radius-lg:          16px;
+    --shadow-sm:          0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md:          0 4px 16px rgba(0,0,0,0.10);
+    --shadow-lg:          0 12px 40px rgba(0,0,0,0.14);
+    --transition:         0.2s ease;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--brand-sky);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* PAGE WRAP */
+  .page-wrap { max-width: 780px; margin: 0 auto; padding: 32px 16px 64px; }
+
+  /* ACCORDION */
+  .accordion-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); margin-bottom: 24px;
+    overflow: hidden; box-shadow: var(--shadow-sm);
+  }
+  .accordion-trigger {
+    width: 100%; display: flex; align-items: center;
+    justify-content: space-between; padding: 20px 24px;
+    background: none; border: none; cursor: pointer;
+    text-align: left; transition: background var(--transition); gap: 12px;
+  }
+  .accordion-trigger:hover { background: var(--surface-alt); }
+  .accordion-trigger-left { display: flex; align-items: center; gap: 12px; }
+  .accordion-icon-wrap {
+    width: 38px; height: 38px; background: var(--brand-accent-light);
+    border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+  }
+  .accordion-icon-wrap svg { width: 18px; height: 18px; color: var(--brand-accent); }
+  .accordion-label {
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px;
+    font-weight: 700; color: var(--text-primary);
+  }
+  .accordion-sublabel { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+  .accordion-chevron {
+    width: 20px; height: 20px; color: var(--text-muted);
+    transition: transform 0.3s ease; flex-shrink: 0;
+  }
+  .accordion-trigger[aria-expanded="true"] .accordion-chevron { transform: rotate(180deg); }
+  .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1); }
+  .accordion-body.open { max-height: 1400px; }
+  .accordion-inner { padding: 0 24px 24px; border-top: 1px solid var(--border); }
+  .jd-section { margin-top: 20px; }
+  .jd-section-title {
+    font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; color: var(--brand-primary); margin-bottom: 10px;
+    padding-bottom: 6px; border-bottom: 2px solid var(--brand-accent); display: inline-block;
+  }
+  .jd-section p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+  .jd-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .jd-list li { font-size: 14px; color: var(--text-secondary); display: flex; gap: 8px; line-height: 1.6; }
+  .jd-list li::before { content: '▸'; color: var(--brand-accent); flex-shrink: 0; margin-top: 1px; }
+  .jd-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .jd-tag {
+    font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 20px;
+    background: var(--brand-accent-light); color: var(--brand-accent); border: 1px solid #D8C4FF;
+  }
+
+  /* PROGRESS STEPPER */
+  .progress-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm);
+  }
+  .progress-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .progress-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .progress-count { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+  .stepper { display: flex; align-items: flex-start; gap: 0; position: relative; }
+  .step-item { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
+  .step-item:not(:last-child)::after {
+    content: ''; position: absolute; top: 16px; left: 50%; width: 100%;
+    height: 2px; background: var(--border); z-index: 0; transition: background 0.3s;
+  }
+  .step-item.completed:not(:last-child)::after { background: var(--brand-accent); }
+  .step-circle {
+    width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border);
+    background: var(--surface); display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: var(--text-muted); position: relative;
+    z-index: 1; transition: all 0.2s; flex-shrink: 0;
+  }
+  .step-item.active .step-circle {
+    border-color: var(--brand-accent); background: var(--brand-accent); color: white;
+    box-shadow: 0 0 0 4px rgba(89,29,169,0.15);
+  }
+  .step-item.completed .step-circle { border-color: var(--brand-accent); background: var(--brand-accent); color: white; }
+  .step-label {
+    font-size: 10px; font-weight: 600; color: var(--text-muted); text-align: center;
+    margin-top: 6px; line-height: 1.3; max-width: 64px; transition: color 0.2s;
+  }
+  .step-item.active .step-label { color: var(--brand-accent); }
+  .step-item.completed .step-label { color: var(--brand-primary); }
+
+  /* FORM CARD */
+  .form-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden;
+  }
+  .form-step { display: none; }
+  .form-step.active { display: block; }
+  .step-header {
+    padding: 28px 32px 20px; border-bottom: 1px solid var(--border); margin-bottom: 28px;
+  }
+  .step-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--brand-accent); margin-bottom: 6px; }
+  .step-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.3px; }
+  .step-desc { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+  .form-body { padding: 0 32px; }
+
+  /* FORM ELEMENTS */
+  .field-group { margin-bottom: 20px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .field-row { grid-template-columns: 1fr; } }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+  label .req { color: var(--brand-accent); margin-left: 2px; }
+  label .hint { font-weight: 400; color: var(--text-muted); font-size: 12px; margin-left: 4px; }
+  input[type="text"], input[type="email"], input[type="tel"], input[type="url"],
+  input[type="number"], select, textarea {
+    width: 100%; padding: 10px 14px; font-size: 14px; font-family: 'Inter', sans-serif;
+    color: var(--text-primary); background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius); transition: border-color var(--transition), box-shadow var(--transition);
+    outline: none; -webkit-appearance: none; appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--brand-accent); box-shadow: 0 0 0 3px rgba(89,29,169,0.08);
+  }
+  input.error, select.error, textarea.error {
+    border-color: var(--error); box-shadow: 0 0 0 3px rgba(220,38,38,0.07);
+  }
+  textarea { resize: vertical; min-height: 96px; }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px;
+  }
+  .field-error { font-size: 12px; color: var(--error); margin-top: 4px; display: none; }
+  .field-error.show { display: block; }
+
+  /* FILE UPLOAD */
+  .file-upload-wrap { position: relative; }
+  .file-upload-input {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    opacity: 0; cursor: pointer; z-index: 2;
+  }
+  .file-upload-box {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 20px 16px; text-align: center; transition: all var(--transition);
+    background: var(--surface-alt); cursor: pointer;
+  }
+  .file-upload-box:hover, .file-upload-box.dragover {
+    border-color: var(--brand-accent); background: var(--brand-accent-light);
+  }
+  .file-upload-box.has-file { border-color: var(--success); background: #F0FDF4; }
+  .file-upload-icon { margin-bottom: 8px; }
+  .file-upload-icon svg { width: 28px; height: 28px; color: var(--text-muted); }
+  .file-upload-box.has-file .file-upload-icon svg { color: var(--success); }
+  .file-upload-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+  .file-upload-label span { color: var(--brand-accent); }
+  .file-upload-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .file-name-display { font-size: 12px; color: var(--success); font-weight: 600; margin-top: 6px; display: none; }
+  .file-name-display.show { display: block; }
+  .file-note {
+    font-size: 12px; color: var(--text-muted); background: var(--surface-alt);
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px;
+    margin-top: 8px; line-height: 1.5;
+  }
+  .file-note strong { color: var(--text-secondary); }
+
+  /* Radio / Checkbox */
+  .radio-group, .check-group { display: flex; flex-direction: column; gap: 8px; }
+  .radio-group.inline, .check-group.inline { flex-direction: row; flex-wrap: wrap; gap: 10px; }
+  .radio-option, .check-option {
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+    padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius);
+    transition: all var(--transition); user-select: none;
+  }
+  .radio-option:hover, .check-option:hover { border-color: var(--brand-accent); background: var(--brand-accent-light); }
+  .radio-option.selected, .check-option.selected { border-color: var(--brand-accent); background: var(--brand-accent-light); }
+  .radio-option input, .check-option input { width: auto; accent-color: var(--brand-accent); flex-shrink: 0; }
+  .radio-option span, .check-option span { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+
+  /* Section separator */
+  .form-section-head { display: flex; align-items: center; gap: 10px; margin: 28px 0 16px; }
+  .form-section-head:first-child { margin-top: 0; }
+  .form-section-line { flex: 1; height: 1px; background: var(--border); }
+  .form-section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+
+  /* NAV */
+  .form-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 32px; border-top: 1px solid var(--border);
+    margin-top: 28px; background: var(--surface-alt); gap: 12px;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px;
+    font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif;
+    border-radius: var(--radius); border: none; cursor: pointer;
+    transition: all var(--transition); text-decoration: none; white-space: nowrap;
+  }
+  .btn svg { width: 16px; height: 16px; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text-secondary); }
+  .btn-outline:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+  .btn-primary { background: var(--brand-accent); color: white; box-shadow: 0 2px 8px rgba(89,29,169,0.3); }
+  .btn-primary:hover { background: #480F8E; box-shadow: 0 4px 16px rgba(89,29,169,0.4); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+  .btn-loading { position: relative; color: transparent !important; }
+  .btn-loading::after {
+    content: ''; position: absolute; width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.4); border-top-color: white;
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* TERMS MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(10,22,40,0.6);
+    backdrop-filter: blur(4px); z-index: 999; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+    max-width: 640px; width: 100%; max-height: 90vh; display: flex; flex-direction: column;
+    animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .modal-header {
+    padding: 24px 28px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  }
+  .modal-header-left h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 800; color: var(--text-primary); }
+  .modal-header-left p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .modal-close {
+    width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+    background: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); flex-shrink: 0;
+  }
+  .modal-close:hover { background: var(--surface-alt); color: var(--text-primary); }
+  .modal-body { padding: 20px 28px; overflow-y: auto; flex: 1; }
+  .modal-links { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .modal-link {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;
+    color: var(--brand-primary); text-decoration: none; padding: 6px 14px;
+    border: 1.5px solid var(--border); border-radius: 8px; transition: all var(--transition);
+  }
+  .modal-link:hover { background: var(--brand-accent-light); border-color: var(--brand-accent); }
+  .modal-link svg { width: 13px; height: 13px; }
+  .terms-rule {
+    padding: 14px 16px; border: 1.5px solid var(--border); border-radius: var(--radius);
+    margin-bottom: 10px; display: flex; align-items: flex-start; gap: 12px;
+    cursor: pointer; transition: all var(--transition); background: var(--surface);
+  }
+  .terms-rule:hover { border-color: var(--brand-accent); background: var(--brand-accent-light); }
+  .terms-rule.agreed { border-color: var(--success); background: #F0FDF4; }
+  .terms-rule-check {
+    width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border);
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    margin-top: 1px; transition: all 0.2s;
+  }
+  .terms-rule.agreed .terms-rule-check { border-color: var(--success); background: var(--success); }
+  .terms-rule-check svg { display: none; width: 12px; height: 12px; color: white; }
+  .terms-rule.agreed .terms-rule-check svg { display: block; }
+  .terms-rule-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .terms-rule-text strong { color: var(--text-primary); }
+  .modal-footer {
+    padding: 16px 28px 24px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .modal-agree-progress { font-size: 12px; color: var(--text-muted); flex: 1; }
+  .modal-agree-progress strong { color: var(--text-primary); }
+  .btn-agree {
+    background: var(--success); color: white; border: none; padding: 11px 22px;
+    font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif;
+    border-radius: var(--radius); cursor: pointer; transition: all var(--transition);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-agree:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-agree:not(:disabled):hover { background: #15803D; }
+
+  /* TERMS CHECK ROW */
+  .terms-check-row {
+    display: flex; align-items: flex-start; gap: 12px; padding: 16px;
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    cursor: pointer; transition: all var(--transition); margin-top: 8px;
+  }
+  .terms-check-row:hover { border-color: var(--brand-accent); background: var(--brand-accent-light); }
+  .terms-check-row.checked { border-color: var(--success); background: #F0FDF4; }
+  .terms-check-row input[type="checkbox"] {
+    width: 18px; height: 18px; accent-color: var(--success); cursor: pointer; flex-shrink: 0; margin-top: 1px;
+  }
+  .terms-check-row-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .open-terms-link {
+    color: var(--brand-accent); font-weight: 700; cursor: pointer; background: none;
+    border: none; font-size: 13px; font-family: 'Inter', sans-serif;
+    padding: 0; text-decoration: underline;
+  }
+
+  /* SUCCESS */
+  .success-state { padding: 64px 32px; text-align: center; display: none; }
+  .success-state.show { display: block; }
+  .success-icon {
+    width: 72px; height: 72px; background: #F0FDF4; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px; border: 2px solid #BBF7D0;
+  }
+  .success-icon svg { width: 36px; height: 36px; color: var(--success); }
+  .success-state h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 26px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; }
+  .success-state p { font-size: 15px; color: var(--text-secondary); max-width: 420px; margin: 0 auto; }
+  .success-ref {
+    display: inline-block; margin-top: 20px; font-size: 12px; color: var(--text-muted);
+    background: var(--surface-alt); padding: 8px 16px; border-radius: 8px;
+    border: 1px solid var(--border); font-family: monospace;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; background: var(--brand-dark);
+    color: white; padding: 14px 20px; border-radius: var(--radius); font-size: 13px;
+    font-weight: 500; box-shadow: var(--shadow-lg); z-index: 9999;
+    display: flex; align-items: center; gap: 10px;
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1); max-width: 340px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { background: var(--error); }
+  .toast svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  @media (max-width: 600px) {
+    .step-header, .form-body, .form-nav { padding-left: 20px; padding-right: 20px; }
+    .modal-header, .modal-body, .modal-footer { padding-left: 20px; padding-right: 20px; }
+    .step-label { font-size: 9px; max-width: 52px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- JOB DESCRIPTION ACCORDION -->
+  <div class="accordion-card">
+    <button class="accordion-trigger" aria-expanded="false" aria-controls="jd-body" onclick="toggleAccordion(this)">
+      <div class="accordion-trigger-left">
+        <div class="accordion-icon-wrap">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="accordion-label">View Job Description</div>
+          <div class="accordion-sublabel">Click to read the full role overview & requirements</div>
+        </div>
+      </div>
+      <svg class="accordion-chevron" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <div class="accordion-body" id="jd-body">
+      <div class="accordion-inner">
+        <div class="jd-section">
+          <div class="jd-section-title">About the Role</div>
+          <p>Sphere Rocket VA connects talented Virtual Assistants with US-based clients across real estate, e-commerce, and business services. We're always looking for skilled, reliable, and driven VAs ready to make an impact remotely.</p>
+        </div>
+        <div class="jd-section">
+          <div class="jd-section-title">What You'll Do</div>
+          <ul class="jd-list">
+            <li>Provide specialized or administrative support to assigned US clients</li>
+            <li>Manage tasks aligned to your applied role (admin, social media, cold calling, CRM, etc.)</li>
+            <li>Communicate clearly and consistently via Slack, Zoom, and email</li>
+            <li>Deliver work on time and report progress to your client</li>
+          </ul>
+        </div>
+        <div class="jd-section">
+          <div class="jd-section-title">Requirements</div>
+          <ul class="jd-list">
+            <li>At least 1 year of VA or related remote work experience</li>
+            <li>Excellent written and spoken English communication</li>
+            <li>Reliable high-speed internet (minimum 25 Mbps) with backup connection</li>
+            <li>Own working PC or Mac</li>
+            <li>Ability to work US business hours</li>
+          </ul>
+        </div>
+        <div class="jd-section">
+          <div class="jd-section-title">Skills & Tools</div>
+          <div class="jd-tags">
+            <span class="jd-tag">Google Workspace</span><span class="jd-tag">Microsoft Office</span>
+            <span class="jd-tag">Slack</span><span class="jd-tag">Zoom</span>
+            <span class="jd-tag">CRM Tools</span><span class="jd-tag">Canva</span>
+            <span class="jd-tag">Trello / Asana</span><span class="jd-tag">Cold Calling</span>
+            <span class="jd-tag">Social Media</span><span class="jd-tag">GoHighLevel</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS STEPPER -->
+  <div class="progress-card">
+    <div class="progress-header">
+      <div class="progress-title">Application Progress</div>
+      <div class="progress-count" id="step-counter">Step 1 of 5</div>
+    </div>
+    <div class="stepper" id="stepper">
+      <div class="step-item active" data-step="1"><div class="step-circle">1</div><div class="step-label">Position & Contact</div></div>
+      <div class="step-item" data-step="2"><div class="step-circle">2</div><div class="step-label">Background & Experience</div></div>
+      <div class="step-item" data-step="3"><div class="step-circle">3</div><div class="step-label">Tech & Equipment</div></div>
+      <div class="step-item" data-step="4"><div class="step-circle">4</div><div class="step-label">Documents & Files</div></div>
+      <div class="step-item" data-step="5"><div class="step-circle">✓</div><div class="step-label">Review & Submit</div></div>
+    </div>
+  </div>
+
+  <!-- FORM CARD -->
+  <div class="form-card" id="form-card">
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STEP 1 — POSITION & CONTACT INFO           -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="form-step active" id="step-1">
+      <div class="step-header">
+        <div class="step-eyebrow">Step 1 of 5</div>
+        <div class="step-title">Position & Contact Information</div>
+        <div class="step-desc">Tell us who you are and what role you're applying for.</div>
+      </div>
+      <div class="form-body">
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Role</div><div class="form-section-line"></div></div>
+
+        <div class="field-group">
+          <label for="position">What position are you applying for? <span class="req">*</span></label>
+          <select id="position" name="position">
+            <option value="">Select a position</option>
+            <option>Ads Specialist</option><option>Affiliate Marketer VA</option><option>Agent Recruiter</option>
+            <option>AI Automation Specialist</option><option>Airbnb Virtual Assistant</option>
+            <option>Chief Marketing Officer</option><option>Client Care</option><option>Client Success Manager</option>
+            <option>Content Creator</option><option>Content Writer</option><option>Construction Estimator</option>
+            <option>CRM Manager</option><option>CRM Specialist</option><option>Customer Service VA</option>
+            <option>Cyber Security Specialist</option><option>Data Analyst</option>
+            <option>Ecommerce Sourcing Specialist</option><option>Ecommerce/Shopify VA</option>
+            <option>Financial Director</option><option>Full stack Web Developer</option>
+            <option>Graphic Designer</option><option>HR Coordinator</option><option>Investment Analyst</option>
+            <option>Listing Coordinator</option><option>Media Buyer</option><option>Mortgage Assistant</option>
+            <option>Multimedia Virtual Assistant</option><option>Med VA</option>
+            <option>Procurement Administrative Assistant</option><option>Project Manager</option>
+            <option>Property Manager</option><option>Recruiter</option><option>REVA</option>
+            <option>Social Media Manager</option><option>Transaction Coordinator</option>
+            <option>Video Editor</option><option>Web Designer</option><option>Web Developer</option>
+            <option>YouTube Specialist</option><option>Operations Manager</option><option>Other</option>
+          </select>
+          <div class="field-error" id="err-position">Please select a position.</div>
+        </div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Personal Details</div><div class="form-section-line"></div></div>
+
+        <div class="field-group">
+          <label for="full_name">Full Name <span class="req">*</span></label>
+          <input type="text" id="full_name" name="full_name" placeholder="e.g. Maria Santos"/>
+          <div class="field-error" id="err-full_name">This field is required.</div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="email">Email Address <span class="req">*</span></label>
+            <input type="email" id="email" name="email" placeholder="yourname@email.com"/>
+            <div class="field-error" id="err-email">Please enter a valid email address.</div>
+          </div>
+          <div class="field-group">
+            <label for="phone">Phone / Mobile Number <span class="req">*</span></label>
+            <input type="tel" id="phone" name="phone" placeholder="+63 9XX XXX XXXX"/>
+            <div class="field-error" id="err-phone">This field is required.</div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="facebook_url">Facebook Profile Link <span class="req">*</span></label>
+            <input type="url" id="facebook_url" name="facebook_url" placeholder="https://facebook.com/yourprofile"/>
+            <div class="field-error" id="err-facebook_url">This field is required.</div>
+          </div>
+          <div class="field-group">
+            <label for="linkedin_instagram_url">LinkedIn / Instagram Profile Link <span class="hint">(optional)</span></label>
+            <input type="url" id="linkedin_instagram_url" name="linkedin_instagram_url" placeholder="https://linkedin.com/in/yourname"/>
+          </div>
+        </div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">How You Found Us</div><div class="form-section-line"></div></div>
+
+        <div class="field-group">
+          <label for="referral_source">How did you hear about Sphere Rocket VA? <span class="req">*</span></label>
+          <select id="referral_source" name="referral_source">
+            <option value="">Select one</option>
+            <option>Behance</option><option>Facebook Ads</option><option>Flexjobs</option>
+            <option>Glassdoor</option><option>Indeed</option><option>Instagram</option>
+            <option>Jobstars</option><option>Jora</option><option>Linkedin</option>
+            <option>OnlineJobs.ph</option><option>School Job Fair</option>
+            <option>Sphere Rocket Team Members</option><option>Family and Friends</option>
+            <option>TikTok</option><option>YouTube</option><option>Webinar</option><option>TikTok Live</option>
+          </select>
+          <div class="field-error" id="err-referral_source">Please select an option.</div>
+        </div>
+
+        <div class="field-group" id="internal_referral_wrap" style="display:none">
+          <label for="internal_referral">If referred by a Sphere Rocket team member, please select their name <span class="req">*</span></label>
+          <select id="internal_referral" name="internal_referral">
+            <option value="">Select team member</option>
+            <option>N/A</option><option>Ariel Sphere</option><option>Bianca Sphere</option>
+            <option>Carol Sphere</option><option>Clea Sphere</option><option>Dianne Sphere</option>
+            <option>Glaiza Sphere</option><option>Jed Sphere</option><option>Jonel Sphere</option>
+            <option>Mark Sphere</option><option>Mich Sphere</option><option>Myro Sphere</option>
+            <option>Rowena Sphere</option><option>Rydal Sphere</option><option>Sabrina Sphere</option>
+            <option>Sarah Sphere</option><option>Sheryn Mendoza</option><option>VA Janvee</option>
+            <option>Charlotte Sphere</option><option>Marion Sphere</option><option>Jessy Sphere</option>
+            <option>PJ Sphere</option><option>Rhea Sphere</option><option>Hailey Sphere</option>
+            <option>Nicole Sphere</option><option>Others</option>
+          </select>
+          <div class="field-error" id="err-internal_referral">Please select a name.</div>
+        </div>
+
+      </div>
+      <div class="form-nav">
+        <div></div>
+        <button class="btn btn-primary" onclick="nextStep(1)">
+          Continue
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STEP 2 — BACKGROUND & EXPERIENCE          -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="form-step" id="step-2">
+      <div class="step-header">
+        <div class="step-eyebrow">Step 2 of 5</div>
+        <div class="step-title">Background & Experience</div>
+        <div class="step-desc">Tell us about your education, experience, and skills.</div>
+      </div>
+      <div class="form-body">
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Education</div><div class="form-section-line"></div></div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="education_level">Highest Educational Attainment <span class="req">*</span></label>
+            <input type="text" id="education_level" name="education_level" placeholder="e.g. Bachelor's Degree, College Level"/>
+            <div class="field-error" id="err-education_level">This field is required.</div>
+          </div>
+          <div class="field-group">
+            <label for="degree">Degree / Course <span class="req">*</span></label>
+            <input type="text" id="degree" name="degree" placeholder="e.g. BS Information Technology"/>
+            <div class="field-error" id="err-degree">This field is required.</div>
+          </div>
+        </div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">VA Experience</div><div class="form-section-line"></div></div>
+
+        <div class="field-group">
+          <label>Do you have Virtual Assistant experience? <span class="req">*</span></label>
+          <div class="radio-group inline" id="has_va_experience">
+            <label class="radio-option" onclick="selectRadio(this,'has_va_experience')"><input type="radio" name="has_va_experience" value="Yes"/> <span>Yes</span></label>
+            <label class="radio-option" onclick="selectRadio(this,'has_va_experience')"><input type="radio" name="has_va_experience" value="No"/> <span>No</span></label>
+          </div>
+          <div class="field-error" id="err-has_va_experience">Please select an option.</div>
+        </div>
+
+        <div class="field-group">
+          <label>Have you had clients from Sphere Rocket before? <span class="req">*</span></label>
+          <div class="radio-group inline" id="previous_sr_client">
+            <label class="radio-option" onclick="selectRadio(this,'previous_sr_client')"><input type="radio" name="previous_sr_client" value="Yes"/> <span>Yes</span></label>
+            <label class="radio-option" onclick="selectRadio(this,'previous_sr_client')"><input type="radio" name="previous_sr_client" value="No"/> <span>No</span></label>
+          </div>
+          <div class="field-error" id="err-previous_sr_client">Please select an option.</div>
+        </div>
+
+        <div class="field-group">
+          <label for="previous_client_industry">What was the business industry of your previous client? <span class="req">*</span></label>
+          <input type="text" id="previous_client_industry" name="previous_client_industry" placeholder="e.g. Real Estate, E-commerce, Healthcare"/>
+          <div class="field-error" id="err-previous_client_industry">This field is required.</div>
+        </div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Skills & Tools</div><div class="form-section-line"></div></div>
+
+        <div class="field-group">
+          <label for="tools_used">List all tools you've used from previous work <span class="req">*</span></label>
+          <textarea id="tools_used" name="tools_used" rows="4" placeholder="e.g. Google Workspace, Slack, Zoom, HubSpot, Follow Up Boss, Canva, GoHighLevel, Trello..."></textarea>
+          <div class="field-error" id="err-tools_used">Please list at least a few tools.</div>
+        </div>
+
+        <div class="field-group">
+          <label for="skills_summary">Briefly outline your relevant skills and experience <span class="req">*</span></label>
+          <textarea id="skills_summary" name="skills_summary" rows="5" placeholder="Describe your key skills, relevant experience, and what makes you a strong candidate for this role..."></textarea>
+          <div class="field-error" id="err-skills_summary">This field is required.</div>
+        </div>
+
+        <div class="field-group">
+          <label for="other_languages">Do you speak any other languages? <span class="hint">(optional)</span></label>
+          <input type="text" id="other_languages" name="other_languages" placeholder='e.g. Spanish, Mandarin, or "None"'/>
+        </div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Rate & Portfolio</div><div class="form-section-line"></div></div>
+
+        <div class="field-group">
+          <label for="pay_per_hour">Expected Pay Per Hour (USD) <span class="req">*</span></label>
+          <input type="text" id="pay_per_hour" name="pay_per_hour" placeholder="e.g. $5/hr, $8–$10/hr"/>
+          <div class="field-error" id="err-pay_per_hour">This field is required.</div>
+        </div>
+
+        <div class="field-group">
+          <label for="portfolio_url">Sample Work / Portfolio Link <span class="req">*</span></label>
+          <input type="text" id="portfolio_url" name="portfolio_url" placeholder='Link to your portfolio, or type "N/A" if none'/>
+          <div class="field-error" id="err-portfolio_url">Please enter a link or type "N/A".</div>
+        </div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Emergency Contact</div><div class="form-section-line"></div></div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="emergency_contact_name">Emergency Contact Name <span class="req">*</span></label>
+            <input type="text" id="emergency_contact_name" name="emergency_contact_name" placeholder="Full name"/>
+            <div class="field-error" id="err-emergency_contact_name">This field is required.</div>
+          </div>
+          <div class="field-group">
+            <label for="emergency_contact_number">Emergency Contact Number <span class="req">*</span></label>
+            <input type="tel" id="emergency_contact_number" name="emergency_contact_number" placeholder="+63 9XX XXX XXXX"/>
+            <div class="field-error" id="err-emergency_contact_number">This field is required.</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="form-nav">
+        <button class="btn btn-outline" onclick="prevStep(2)"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg> Back</button>
+        <button class="btn btn-primary" onclick="nextStep(2)">Continue <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STEP 3 — TECH & EQUIPMENT                 -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="form-step" id="step-3">
+      <div class="step-header">
+        <div class="step-eyebrow">Step 3 of 5</div>
+        <div class="step-title">Tech Setup & Equipment</div>
+        <div class="step-desc">Help us understand your work-from-home setup.</div>
+      </div>
+      <div class="form-body">
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Computer</div><div class="form-section-line"></div></div>
+
+        <div class="field-group">
+          <label>Do you own a PC or Mac? <span class="req">*</span></label>
+          <div class="radio-group" id="computer_type">
+            <label class="radio-option" onclick="selectRadio(this,'computer_type')"><input type="radio" name="computer_type" value="Windows Laptop/Desktop"/> <span>Windows Laptop/Desktop</span></label>
+            <label class="radio-option" onclick="selectRadio(this,'computer_type')"><input type="radio" name="computer_type" value="Macbook Air/Pro/iMac"/> <span>Macbook Air/Pro/iMac</span></label>
+            <label class="radio-option" onclick="selectRadio(this,'computer_type')"><input type="radio" name="computer_type" value="All of the Above"/> <span>All of the Above</span></label>
+          </div>
+          <div class="field-error" id="err-computer_type">Please select an option.</div>
+        </div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Device Specs Screenshot</div><div class="form-section-line"></div></div>
+
+        <div class="field-group">
+          <label>Upload a screenshot of your device specifications <span class="req">*</span> <span class="hint">(processor, RAM, OS version)</span></label>
+          <div class="file-upload-wrap">
+            <input type="file" class="file-upload-input" id="device_specs_file" name="device_specs_file" accept="image/*,.pdf" onchange="handleFileChange(this,'device_specs_box','device_specs_name')"/>
+            <div class="file-upload-box" id="device_specs_box">
+              <div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+              <div class="file-upload-label"><span>Click to upload</span> or drag & drop</div>
+              <div class="file-upload-sub">PNG, JPG, PDF accepted</div>
+            </div>
+          </div>
+          <div class="file-name-display" id="device_specs_name"></div>
+          <div class="field-error" id="err-device_specs_file">Please upload your device specs screenshot.</div>
+        </div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Internet Speed Test</div><div class="form-section-line"></div></div>
+
+        <div class="field-group">
+          <label>Upload your internet speed test result <span class="req">*</span></label>
+          <div class="file-upload-wrap">
+            <input type="file" class="file-upload-input" id="speed_test_file" name="speed_test_file" accept="image/*,.pdf" onchange="handleFileChange(this,'speed_test_box','speed_test_name')"/>
+            <div class="file-upload-box" id="speed_test_box">
+              <div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+              <div class="file-upload-label"><span>Click to upload</span> or drag & drop</div>
+              <div class="file-upload-sub">PNG, JPG, PDF accepted · Go to fast.com or speedtest.net</div>
+            </div>
+          </div>
+          <div class="file-name-display" id="speed_test_name"></div>
+          <div class="field-error" id="err-speed_test_file">Please upload your speed test result.</div>
+        </div>
+
+      </div>
+      <div class="form-nav">
+        <button class="btn btn-outline" onclick="prevStep(3)"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg> Back</button>
+        <button class="btn btn-primary" onclick="nextStep(3)">Continue <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STEP 4 — DOCUMENTS & FILES                -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="form-step" id="step-4">
+      <div class="step-header">
+        <div class="step-eyebrow">Step 4 of 5</div>
+        <div class="step-title">Documents & Files</div>
+        <div class="step-desc">Upload your resume, valid ID, and DISC assessment results.</div>
+      </div>
+      <div class="form-body">
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Resume</div><div class="form-section-line"></div></div>
+
+        <div class="field-group">
+          <label>Upload a PDF copy of your resume <span class="req">*</span></label>
+          <div class="file-upload-wrap">
+            <input type="file" class="file-upload-input" id="resume_file" name="resume_file" accept=".pdf,.doc,.docx" onchange="handleFileChange(this,'resume_box','resume_name')"/>
+            <div class="file-upload-box" id="resume_box">
+              <div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div class="file-upload-label"><span>Click to upload</span> or drag & drop</div>
+              <div class="file-upload-sub">PDF, DOC, or DOCX · Max 10 MB</div>
+            </div>
+          </div>
+          <div class="file-name-display" id="resume_name"></div>
+          <div class="file-note">
+            <strong>📌 Reminder:</strong> Please make sure your resume includes the <strong>job title and description</strong> of the position you're applying for. This helps our team match you faster.
+          </div>
+          <div class="field-error" id="err-resume_file">Please upload your resume.</div>
+        </div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Valid Government ID</div><div class="form-section-line"></div></div>
+
+        <div class="field-group">
+          <label for="gov_id_type">Please choose one valid Government ID to upload <span class="req">*</span></label>
+          <select id="gov_id_type" name="gov_id_type">
+            <option value="">Select ID type</option>
+            <option>Driver's License</option>
+            <option>NBI Clearance</option>
+            <option>PhilHealth ID</option>
+            <option>Philippine Identification System ID (PhilSys ID or National ID)</option>
+            <option>Philippine Passport</option>
+            <option>Postal ID</option>
+            <option>Professional Regulation Commission (PRC) ID</option>
+            <option>SSS/GSIS or UMID</option>
+            <option>Voter's ID or Voter's Certification from the Commission on Elections (COMELEC)</option>
+          </select>
+          <div class="field-error" id="err-gov_id_type">Please select an ID type.</div>
+        </div>
+
+        <div class="field-group">
+          <label>Upload a clear photo of your valid ID <span class="req">*</span></label>
+          <div class="file-upload-wrap">
+            <input type="file" class="file-upload-input" id="gov_id_file" name="gov_id_file" accept="image/*,.pdf" onchange="handleFileChange(this,'gov_id_box','gov_id_name')"/>
+            <div class="file-upload-box" id="gov_id_box">
+              <div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+              <div class="file-upload-label"><span>Click to upload</span> or drag & drop</div>
+              <div class="file-upload-sub">PNG, JPG, PDF · Clear photo, all 4 corners visible</div>
+            </div>
+          </div>
+          <div class="file-name-display" id="gov_id_name"></div>
+          <div class="field-error" id="err-gov_id_file">Please upload your government ID photo.</div>
+        </div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">DISC Assessment</div><div class="form-section-line"></div></div>
+
+        <div class="field-group">
+          <label>Take the Tony Robbins DISC Assessment and upload the result here <span class="req">*</span></label>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Take the free assessment at <a href="https://www.tonyrobbins.com/disc/" target="_blank" rel="noopener" style="color:var(--brand-accent);font-weight:600;">tonyrobbins.com/disc</a> before uploading.</p>
+          <div class="file-upload-wrap">
+            <input type="file" class="file-upload-input" id="disc_file" name="disc_file" accept="image/*,.pdf" onchange="handleFileChange(this,'disc_box','disc_name')"/>
+            <div class="file-upload-box" id="disc_box">
+              <div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+              <div class="file-upload-label"><span>Click to upload</span> your DISC result</div>
+              <div class="file-upload-sub">PNG, JPG, PDF accepted</div>
+            </div>
+          </div>
+          <div class="file-name-display" id="disc_name"></div>
+          <div class="field-error" id="err-disc_file">Please upload your DISC assessment result.</div>
+        </div>
+
+        <div class="field-group">
+          <label for="disc_style">What is your DISC Style? <span class="req">*</span></label>
+          <input type="text" id="disc_style" name="disc_style" placeholder="e.g. D — Dominance, I — Influence, S — Steadiness, C — Conscientiousness"/>
+          <div class="field-error" id="err-disc_style">This field is required.</div>
+        </div>
+
+      </div>
+      <div class="form-nav">
+        <button class="btn btn-outline" onclick="prevStep(4)"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg> Back</button>
+        <button class="btn btn-primary" onclick="nextStep(4)">Review Application <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STEP 5 — REVIEW & SUBMIT                  -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="form-step" id="step-5">
+      <div class="step-header">
+        <div class="step-eyebrow">Step 5 of 5</div>
+        <div class="step-title">Review & Submit</div>
+        <div class="step-desc">Confirm your answers, agree to our terms, and submit.</div>
+      </div>
+      <div class="form-body">
+        <div id="review-summary"></div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Terms & Agreement</div><div class="form-section-line"></div></div>
+
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
+          Before submitting, you must read and agree to all our terms. Click below to open and review.
+        </p>
+
+        <div class="terms-check-row" id="terms-row" onclick="handleTermsClick(event)">
+          <input type="checkbox" id="terms_agreed" name="terms_agreed" value="I Agree" readonly style="pointer-events:none"/>
+          <div class="terms-check-row-text">
+            I have read and agree to the
+            <button type="button" class="open-terms-link" onclick="openTermsModal(event)">Terms & Conditions and Privacy Policy</button>
+            of Sphere Rocket VA. I confirm that all information I've provided is accurate and truthful.
+          </div>
+        </div>
+        <div class="field-error" id="err-terms_agreed">You must agree to the terms before submitting.</div>
+      </div>
+      <div class="form-nav">
+        <button class="btn btn-outline" onclick="prevStep(5)"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg> Back</button>
+        <button class="btn btn-primary" id="submit-btn" onclick="submitApplication()">
+          Submit Application
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 19-7z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-state" id="success-state">
+      <div class="success-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <h2>Application Submitted!</h2>
+      <p>Thank you for applying to Sphere Rocket VA. Our team will review your application and reach out within 3–5 business days.</p>
+      <div class="success-ref">Reference: SR-<span id="ref-id"></span></div>
+    </div>
+
+  </div><!-- /form-card -->
+</div><!-- /page-wrap -->
+
+<!-- TERMS MODAL -->
+<div class="modal-overlay" id="terms-modal" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <h2>Terms, Conditions & Privacy Policy</h2>
+        <p>Sphere Rocket VA — General Application</p>
+      </div>
+      <button class="modal-close" onclick="closeTermsModal()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-links">
+        <a class="modal-link" href="https://www.sphererocketva.com/terms" target="_blank" rel="noopener">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Terms & Conditions
+        </a>
+        <a class="modal-link" href="https://www.sphererocketva.com/privacy" target="_blank" rel="noopener">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Privacy Policy
+        </a>
+      </div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.7;">Click each statement below to acknowledge it. You must agree to all items before submitting.</p>
+
+      <div class="terms-rule" id="rule-1" onclick="agreeRule('rule-1')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>Platform Role.</strong> I understand Sphere Rocket VA is not my employer and does not guarantee job placement or hiring. It is a U.S.-based tech platform that connects business owners and Virtual Assistants for potential working relationships.</div>
+      </div>
+      <div class="terms-rule" id="rule-2" onclick="agreeRule('rule-2')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>Hiring Decisions.</strong> Sphere Rocket VA may recommend or introduce profiles based on fit, but all hiring decisions are made solely by the client. Compensation, contracts, and work terms are negotiated directly between the client and VA.</div>
+      </div>
+      <div class="terms-rule" id="rule-3" onclick="agreeRule('rule-3')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>No Management Role.</strong> Sphere Rocket VA does not negotiate pay, assign tasks, manage schedules, or supervise the work of any Virtual Assistant.</div>
+      </div>
+      <div class="terms-rule" id="rule-4" onclick="agreeRule('rule-4')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>Vetting Interviews.</strong> I understand that vetting interviews are not job interviews, but internal assessments used for profile review and future matching. Not all applicants will be matched or selected.</div>
+      </div>
+      <div class="terms-rule" id="rule-5" onclick="agreeRule('rule-5')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>Application Updates.</strong> I may update or resubmit my application at any time to reflect new skills, tools, availability, or other relevant changes. Visibility depends on client demand, skill alignment, and platform needs.</div>
+      </div>
+      <div class="terms-rule" id="rule-6" onclick="agreeRule('rule-6')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>Data Privacy & Accuracy.</strong> I agree to the Terms & Conditions and Privacy Policy of Sphere Rocket VA. I confirm all information provided is accurate, and I consent to the collection and processing of my data for recruitment purposes.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-agree-progress">Agreed: <strong id="agreed-count">0</strong> / 6</div>
+      <button class="btn-agree" id="btn-agree-all" disabled onclick="agreeAllAndClose()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        I Agree to All
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+// ─── CONFIG ─────────────────────────────────────────────────────────────────
+// The webhook URL is NOT here anymore — it goes through our Netlify function
+// so it's never exposed in page source. See /netlify/functions/submit.js
+const SUBMIT_ENDPOINT = '/.netlify/functions/submit';
+const TOTAL_STEPS = 5;
+
+// ─── STEP NAVIGATION ─────────────────────────────────────────────────────────
+let currentStep = 1;
+
+function showStep(n) {
+  document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('step-' + n);
+  if (el) el.classList.add('active');
+  document.getElementById('step-counter').textContent = `Step ${n} of ${TOTAL_STEPS}`;
+  updateStepper(n);
+  window.scrollTo({ top: document.getElementById('form-card').offsetTop - 80, behavior: 'smooth' });
+}
+
+function updateStepper(n) {
+  document.querySelectorAll('.step-item').forEach(item => {
+    const s = parseInt(item.dataset.step);
+    item.classList.remove('active','completed');
+    if (s === n) item.classList.add('active');
+    else if (s < n) item.classList.add('completed');
+  });
+}
+
+function nextStep(from) {
+  if (!validateStep(from)) return;
+  if (from === TOTAL_STEPS - 1) buildReviewSummary();
+  currentStep = from + 1;
+  showStep(currentStep);
+}
+
+function prevStep(from) {
+  currentStep = from - 1;
+  showStep(currentStep);
+}
+
+// ─── VALIDATION ──────────────────────────────────────────────────────────────
+const stepFields = {
+  1: ['position','full_name','email','phone','facebook_url','referral_source'],
+  2: ['education_level','degree','has_va_experience','previous_sr_client','previous_client_industry','tools_used','skills_summary','pay_per_hour','portfolio_url','emergency_contact_name','emergency_contact_number'],
+  3: ['computer_type','device_specs_file','speed_test_file'],
+  4: ['resume_file','gov_id_type','gov_id_file','disc_file','disc_style'],
+  5: ['terms_agreed']
+};
+
+function validateStep(step) {
+  let valid = true;
+  (stepFields[step] || []).forEach(f => {
+    const err = document.getElementById('err-' + f);
+    let ok = false;
+    if (['has_va_experience','previous_sr_client','computer_type'].includes(f)) {
+      ok = !!document.querySelector(`input[name="${f}"]:checked`);
+    } else if (f === 'terms_agreed') {
+      ok = document.getElementById('terms_agreed').checked;
+    } else if (['resume_file','gov_id_file','disc_file','device_specs_file','speed_test_file'].includes(f)) {
+      const inp = document.getElementById(f);
+      ok = inp && inp.files && inp.files.length > 0;
+    } else if (f === 'email') {
+      const v = (document.getElementById(f)?.value || '').trim();
+      ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    } else {
+      const el = document.getElementById(f);
+      ok = el && el.value.trim() !== '';
+    }
+    if (err) err.classList.toggle('show', !ok);
+    const el = document.getElementById(f);
+    if (el && !['has_va_experience','previous_sr_client','computer_type'].includes(f)) el.classList.toggle('error', !ok);
+    if (!ok) valid = false;
+  });
+
+  // Conditional: if referral_source is "Sphere Rocket Team Members", internal_referral is required
+  if (step === 1) {
+    const src = document.getElementById('referral_source').value;
+    const needsInternal = src === 'Sphere Rocket Team Members';
+    if (needsInternal) {
+      const iv = document.getElementById('internal_referral').value;
+      const err = document.getElementById('err-internal_referral');
+      if (!iv) { if (err) err.classList.add('show'); valid = false; }
+      else { if (err) err.classList.remove('show'); }
+    }
+  }
+
+  if (!valid) showToast('Please fill in all required fields.', true);
+  return valid;
+}
+
+// ─── RADIO HELPER ────────────────────────────────────────────────────────────
+function selectRadio(label, groupName) {
+  document.querySelectorAll(`input[name="${groupName}"]`).forEach(r => r.closest('.radio-option').classList.remove('selected'));
+  label.classList.add('selected');
+  label.querySelector('input').checked = true;
+}
+
+// ─── FILE UPLOAD ─────────────────────────────────────────────────────────────
+function handleFileChange(input, boxId, nameId) {
+  const box = document.getElementById(boxId);
+  const nameEl = document.getElementById(nameId);
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    box.classList.add('has-file');
+    nameEl.textContent = '✓ ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+    nameEl.classList.add('show');
+    const err = document.getElementById('err-' + input.id);
+    if (err) err.classList.remove('show');
+  }
+}
+
+// Drag & drop
+document.querySelectorAll('.file-upload-box').forEach(box => {
+  box.addEventListener('dragover', e => { e.preventDefault(); box.classList.add('dragover'); });
+  box.addEventListener('dragleave', () => box.classList.remove('dragover'));
+  box.addEventListener('drop', e => {
+    e.preventDefault(); box.classList.remove('dragover');
+    const input = box.previousElementSibling;
+    if (input && e.dataTransfer.files.length) {
+      const dt = new DataTransfer();
+      dt.items.add(e.dataTransfer.files[0]);
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+});
+
+// ─── ACCORDION ───────────────────────────────────────────────────────────────
+function toggleAccordion(btn) {
+  const expanded = btn.getAttribute('aria-expanded') === 'true';
+  btn.setAttribute('aria-expanded', !expanded);
+  document.getElementById(btn.getAttribute('aria-controls')).classList.toggle('open', !expanded);
+}
+
+// ─── CONDITIONAL FIELD ───────────────────────────────────────────────────────
+document.getElementById('referral_source').addEventListener('change', function() {
+  const wrap = document.getElementById('internal_referral_wrap');
+  wrap.style.display = this.value === 'Sphere Rocket Team Members' ? 'block' : 'none';
+});
+
+// ─── TERMS MODAL ─────────────────────────────────────────────────────────────
+let agreedRules = new Set();
+const totalRules = 6;
+
+function openTermsModal(e) { if (e) e.stopPropagation(); document.getElementById('terms-modal').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeTermsModal() { document.getElementById('terms-modal').classList.remove('open'); document.body.style.overflow = ''; }
+function handleTermsClick(e) { if (!e.target.classList.contains('open-terms-link')) openTermsModal(e); }
+document.getElementById('terms-modal').addEventListener('click', function(e) { if (e.target === this) closeTermsModal(); });
+
+function agreeRule(ruleId) {
+  const el = document.getElementById(ruleId);
+  if (!el) return;
+  el.classList.add('agreed');
+  agreedRules.add(ruleId);
+  document.getElementById('agreed-count').textContent = agreedRules.size;
+  if (agreedRules.size >= totalRules) document.getElementById('btn-agree-all').disabled = false;
+}
+
+function agreeAllAndClose() {
+  for (let i = 1; i <= totalRules; i++) agreeRule('rule-' + i);
+  const cb = document.getElementById('terms_agreed');
+  cb.checked = true;
+  document.getElementById('terms-row').classList.add('checked');
+  const err = document.getElementById('err-terms_agreed');
+  if (err) err.classList.remove('show');
+  closeTermsModal();
+  showToast("Terms accepted — you're good to submit!");
+}
+
+// ─── REVIEW SUMMARY ──────────────────────────────────────────────────────────
+function buildReviewSummary() {
+  const fileInfo = (id) => {
+    const inp = document.getElementById(id);
+    return (inp && inp.files && inp.files[0]) ? inp.files[0].name : '—';
+  };
+  const sections = [
+    { title: 'Position & Contact', rows: [
+      ['Applying For', val('position')], ['Full Name', val('full_name')],
+      ['Email', val('email')], ['Phone', val('phone')],
+      ['Facebook', val('facebook_url')], ['LinkedIn/Instagram', val('linkedin_instagram_url') || '—'],
+      ['How You Found Us', val('referral_source')], ['Internal Referral', val('internal_referral') || '—'],
+    ]},
+    { title: 'Background & Experience', rows: [
+      ['Education', val('education_level')], ['Degree', val('degree')],
+      ['VA Experience', radioVal('has_va_experience')], ['Previous SR Client', radioVal('previous_sr_client')],
+      ['Previous Client Industry', val('previous_client_industry')],
+      ['Tools Used', val('tools_used')], ['Skills Summary', val('skills_summary')],
+      ['Other Languages', val('other_languages') || '—'], ['Expected Rate', val('pay_per_hour')],
+      ['Portfolio URL', val('portfolio_url')],
+      ['Emergency Contact', val('emergency_contact_name') + ' · ' + val('emergency_contact_number')],
+    ]},
+    { title: 'Tech Setup', rows: [
+      ['Computer Type', radioVal('computer_type')],
+      ['Device Specs (file)', fileInfo('device_specs_file')],
+      ['Speed Test (file)', fileInfo('speed_test_file')],
+    ]},
+    { title: 'Documents', rows: [
+      ['Resume (file)', fileInfo('resume_file')],
+      ['Government ID Type', val('gov_id_type')],
+      ['Government ID (file)', fileInfo('gov_id_file')],
+      ['DISC Result (file)', fileInfo('disc_file')],
+      ['DISC Style', val('disc_style')],
+    ]},
+  ];
+  let html = '';
+  sections.forEach(sec => {
+    html += `<div style="margin-bottom:20px;"><div style="font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">${sec.title}</div><table style="width:100%;border-collapse:collapse;">`;
+    sec.rows.forEach(([label, value]) => {
+      html += `<tr><td style="font-size:12px;font-weight:600;color:var(--text-secondary);padding:5px 0;width:40%;vertical-align:top;">${label}</td><td style="font-size:13px;color:var(--text-primary);padding:5px 0;padding-left:12px;vertical-align:top;word-break:break-all;">${value || '—'}</td></tr>`;
+    });
+    html += `</table></div>`;
+  });
+  document.getElementById('review-summary').innerHTML = html;
+}
+
+function val(id) { return (document.getElementById(id)?.value || '').trim(); }
+function radioVal(name) { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : '—'; }
+
+// ─── SUBMISSION ───────────────────────────────────────────────────────────────
+async function submitApplication() {
+  if (!validateStep(5)) return;
+
+  const btn = document.getElementById('submit-btn');
+  btn.classList.add('btn-loading');
+  btn.disabled = true;
+
+  try {
+    // Build multipart/form-data to handle both text fields and file uploads
+    const formData = new FormData();
+
+    // ── Text fields ──
+    const textPayload = {
+      position:                 val('position'),
+      full_name:                val('full_name'),
+      email:                    val('email'),
+      phone:                    val('phone'),
+      facebook_url:             val('facebook_url'),
+      linkedin_instagram_url:   val('linkedin_instagram_url'),
+      referral_source:          val('referral_source'),
+      internal_referral:        val('internal_referral'),
+      education_level:          val('education_level'),
+      degree:                   val('degree'),
+      has_va_experience:        radioVal('has_va_experience'),
+      previous_sr_client:       radioVal('previous_sr_client'),
+      previous_client_industry: val('previous_client_industry'),
+      tools_used:               val('tools_used'),
+      skills_summary:           val('skills_summary'),
+      other_languages:          val('other_languages'),
+      pay_per_hour:             val('pay_per_hour'),
+      portfolio_url:            val('portfolio_url'),
+      emergency_contact_name:   val('emergency_contact_name'),
+      emergency_contact_number: val('emergency_contact_number'),
+      computer_type:            radioVal('computer_type'),
+      gov_id_type:              val('gov_id_type'),
+      disc_style:               val('disc_style'),
+      terms_agreed:             document.getElementById('terms_agreed').checked ? 'I Agree' : 'No',
+      submitted_at:             new Date().toISOString(),
+      source:                   'Sphere Rocket VA — General Application',
+    };
+
+    // Append all text fields
+    Object.entries(textPayload).forEach(([k, v]) => formData.append(k, v));
+
+    // ── File fields — send as actual binary files ──
+    // Zapier Catch Hook receives files from multipart/form-data
+    // and stores them as file objects with a file URL accessible in subsequent Zap steps
+    const fileFields = ['resume_file','gov_id_file','disc_file','device_specs_file','speed_test_file'];
+    fileFields.forEach(fieldId => {
+      const inp = document.getElementById(fieldId);
+      if (inp && inp.files && inp.files[0]) {
+        formData.append(fieldId, inp.files[0], inp.files[0].name);
+      }
+    });
+
+    // POST to our Netlify function (which proxies to Zapier with the hidden webhook URL)
+    const res = await fetch(SUBMIT_ENDPOINT, {
+      method: 'POST',
+      body: formData
+      // Note: do NOT set Content-Type header — browser sets it automatically with the correct boundary
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(errorText || 'Submission failed');
+    }
+
+    // Show success
+    document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('success-state').classList.add('show');
+    document.querySelector('.progress-card').style.opacity = '0.4';
+    document.getElementById('step-counter').textContent = 'Submitted ✓';
+    document.getElementById('ref-id').textContent = Math.random().toString(36).substr(2,8).toUpperCase();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } catch (err) {
+    console.error(err);
+    showToast('Something went wrong. Please try again.', true);
+    btn.classList.remove('btn-loading');
+    btn.disabled = false;
+  }
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.toggle('error', isError);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 4500);
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+showStep(1);
+</script>
+</body>
+</html>
