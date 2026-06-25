@@ -1,0 +1,44 @@
+# netlify.toml
+# Place this file in the ROOT of your project folder alongside index.html
+
+[build]
+  # Netlify will serve index.html from the root
+  publish = "."
+  # Where Netlify looks for serverless functions
+  functions = "netlify/functions"
+
+# ── Rate Limiting ────────────────────────────────────────────────────────────
+# Limits abuse on the submission endpoint.
+# 10 submissions per minute per IP — more than enough for a recruitment form.
+[[headers]]
+  for = "/.netlify/functions/submit"
+  [headers.values]
+    # Prevent caching of the function endpoint
+    Cache-Control = "no-store, no-cache, must-revalidate"
+
+[[redirects]]
+  # Clean URL: /apply → /index.html (optional)
+  from = "/apply"
+  to   = "/index.html"
+  status = 200
+
+# ── Security Headers (applied to all pages) ──────────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options        = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy        = "strict-origin-when-cross-origin"
+    Permissions-Policy     = "geolocation=(), microphone=(), camera=()"
+    # Uncomment and tighten after testing:
+    # Content-Security-Policy = "default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;"
+
+# ── Function-specific rate limiting (Netlify Pro feature) ────────────────────
+# If you're on Netlify Pro, uncomment the block below for built-in rate limiting:
+# [[functions]]
+#   path = "/submit"
+#   [functions.rate_limit]
+#     window_size = 60
+#     window_limit = 10
+#     aggregate_by = ["ip"]
+#     action = "block"
