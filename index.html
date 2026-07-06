@@ -370,30 +370,32 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
       <div class="form-body">
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Personal Details</div><div class="form-section-line"></div></div>
         <div class="field-group"><label for="full_name">Full Name <span class="req">*</span></label><input type="text" id="full_name" name="full_name" placeholder="e.g. Maria Santos"/><div class="field-error" id="err-full_name">This field is required.</div></div>
+        <div class="field-group"><label for="email">Email Address <span class="req">*</span></label><input type="email" id="email" name="email" placeholder="yourname@email.com"/><div class="field-error" id="err-email">Please enter a valid email address.</div></div>
         <div class="field-row">
-          <div class="field-group"><label for="email">Email Address <span class="req">*</span></label><input type="email" id="email" name="email" placeholder="yourname@email.com"/><div class="field-error" id="err-email">Please enter a valid email address.</div></div>
-          <div class="field-group"><label for="phone">Phone / Mobile <span class="req">*</span></label><input type="tel" id="phone" name="phone" placeholder="+63 9XX XXX XXXX"/><div class="field-error" id="err-phone">This field is required.</div></div>
+          <div class="field-group"><label for="phone">Phone Number <span class="req">*</span></label><input type="tel" id="phone" name="phone" placeholder="+63 9XX XXX XXXX"/><div class="field-error" id="err-phone">This field is required.</div></div>
+          <div class="field-group"><label for="alternative_phone">Alternative Phone Number <span class="hint">(optional)</span></label><input type="tel" id="alternative_phone" name="alternative_phone" placeholder="+63 9XX XXX XXXX"/></div>
         </div>
+        <div class="field-group"><label for="complete_address">Complete Address <span class="req">*</span></label><input type="text" id="complete_address" name="complete_address" placeholder="e.g. 123 Rizal St, Quezon City, Metro Manila, Philippines"/><div class="field-error" id="err-complete_address">This field is required.</div></div>
         <div class="field-row">
           <div class="field-group"><label for="facebook_url">Facebook Profile Link <span class="req">*</span></label><input type="url" id="facebook_url" name="facebook_url" placeholder="https://facebook.com/yourprofile"/><div class="field-error" id="err-facebook_url">This field is required.</div></div>
-          <div class="field-group"><label for="linkedin_instagram_url">LinkedIn / Instagram <span class="hint">(optional)</span></label><input type="url" id="linkedin_instagram_url" name="linkedin_instagram_url" placeholder="https://linkedin.com/in/yourname"/></div>
+          <div class="field-group"><label for="linkedin_instagram_url">LinkedIn / Instagram Profile Link <span class="req">*</span></label><input type="url" id="linkedin_instagram_url" name="linkedin_instagram_url" placeholder="https://linkedin.com/in/yourname"/><div class="field-error" id="err-linkedin_instagram_url">This field is required.</div></div>
         </div>
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">How You Found Us</div><div class="form-section-line"></div></div>
         <div class="field-group">
           <label for="referral_source">How did you hear about Sphere Rocket VA? <span class="req">*</span></label>
           <select id="referral_source" name="referral_source">
             <option value="">Select one</option>
-            <option>Facebook</option><option>TikTok</option><option>TikTok Live</option>
-            <option>Instagram</option><option>YouTube</option><option>Sphere Rocket Team Members</option>
             <option>Behance</option><option>Facebook Ads</option><option>Flexjobs</option>
-            <option>Glassdoor</option><option>Indeed</option><option>Jobstars</option>
-            <option>Jora</option><option>LinkedIn</option><option>OnlineJobs.ph</option>
-            <option>School Job Fair</option><option>Family and Friends</option><option>Webinar</option>
+            <option>Glassdoor</option><option>Indeed</option><option>Instagram</option>
+            <option>Jobstars</option><option>Jora</option><option>LinkedIn</option>
+            <option>OnlineJobs.ph</option><option>School Job Fair</option>
+            <option>Sphere Rocket Team Members</option><option>Family and Friends</option>
+            <option>TikTok</option><option>YouTube</option><option>Webinar</option><option>TikTok Live</option>
           </select>
           <div class="field-error" id="err-referral_source">Please select an option.</div>
         </div>
         <div class="field-group" id="internal_referral_wrap" style="display:none">
-          <label for="internal_referral">Select the team member who referred you <span class="req">*</span></label>
+          <label for="internal_referral">If referred by a Sphere Rocket internal team member, please select their name <span class="req">*</span></label>
           <select id="internal_referral" name="internal_referral">
             <option value="">Select team member</option>
             <option>N/A</option><option>Ariel Sphere</option><option>Bianca Sphere</option><option>Carol Sphere</option>
@@ -403,7 +405,8 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
             <option>Rydal Sphere</option><option>Sabrina Sphere</option><option>Sarah Sphere</option>
             <option>Sheryn Mendoza</option><option>VA Janvee</option><option>Charlotte Sphere</option>
             <option>Marion Sphere</option><option>Jessy Sphere</option><option>PJ Sphere</option>
-            <option>Rhea Sphere</option><option>Hailey Sphere</option><option>Nicole Sphere</option><option>Others</option>
+            <option>Rhea Sphere</option><option>Hailey Sphere</option><option>Nicole Sphere</option>
+            <option>Jay-Bee Sphere</option><option>Russell Sphere</option><option>Others</option>
           </select>
           <div class="field-error" id="err-internal_referral">Please select a name.</div>
         </div>
@@ -415,21 +418,59 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
     <div class="form-step" id="step-2">
       <div class="step-header"><div class="step-eyebrow">Step 2 of 4</div><div class="step-title">Background & Experience</div><div class="step-desc">Tell us about your education, experience, and skills.</div></div>
       <div class="form-body">
+
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Education</div><div class="form-section-line"></div></div>
-        <div class="field-row">
-          <div class="field-group"><label for="education_level">Highest Educational Attainment <span class="req">*</span></label><input type="text" id="education_level" name="education_level" placeholder="e.g. Bachelor's Degree"/><div class="field-error" id="err-education_level">This field is required.</div></div>
-          <div class="field-group"><label for="degree">Degree / Course <span class="req">*</span></label><input type="text" id="degree" name="degree" placeholder="e.g. BS Information Technology"/><div class="field-error" id="err-degree">This field is required.</div></div>
-        </div>
+        <div class="field-group"><label for="college_degree">What is your college degree? <span class="req">*</span></label><input type="text" id="college_degree" name="college_degree" placeholder="e.g. BS Information Technology, AB Communication"/><div class="field-error" id="err-college_degree">This field is required.</div></div>
+
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">VA Experience</div><div class="form-section-line"></div></div>
-        <div class="field-group"><label>Do you have VA experience? <span class="req">*</span></label><div class="radio-group inline" id="has_va_experience"><label class="radio-option" onclick="selectRadio(this,'has_va_experience')"><input type="radio" name="has_va_experience" value="Yes"/> <span>Yes</span></label><label class="radio-option" onclick="selectRadio(this,'has_va_experience')"><input type="radio" name="has_va_experience" value="No"/> <span>No</span></label></div><div class="field-error" id="err-has_va_experience">Please select an option.</div></div>
+        <div class="field-group"><label>Do you have Virtual Assistant experience? <span class="req">*</span></label><div class="radio-group inline" id="has_va_experience"><label class="radio-option" onclick="selectRadio(this,'has_va_experience')"><input type="radio" name="has_va_experience" value="Yes"/> <span>Yes</span></label><label class="radio-option" onclick="selectRadio(this,'has_va_experience')"><input type="radio" name="has_va_experience" value="No"/> <span>No</span></label></div><div class="field-error" id="err-has_va_experience">Please select an option.</div></div>
+        <div class="field-group"><label for="previous_client_industry">What was the business industry of your previous client? <span class="req">*</span></label><input type="text" id="previous_client_industry" name="previous_client_industry" placeholder="e.g. Real Estate, E-commerce, Healthcare"/><div class="field-error" id="err-previous_client_industry">This field is required.</div></div>
         <div class="field-group"><label>Have you had clients from Sphere Rocket before? <span class="req">*</span></label><div class="radio-group inline" id="previous_sr_client"><label class="radio-option" onclick="selectRadio(this,'previous_sr_client')"><input type="radio" name="previous_sr_client" value="Yes"/> <span>Yes</span></label><label class="radio-option" onclick="selectRadio(this,'previous_sr_client')"><input type="radio" name="previous_sr_client" value="No"/> <span>No</span></label></div><div class="field-error" id="err-previous_sr_client">Please select an option.</div></div>
-        <div class="field-group"><label for="previous_client_industry">Business industry of your previous client <span class="req">*</span></label><input type="text" id="previous_client_industry" name="previous_client_industry" placeholder="e.g. Real Estate, E-commerce, Healthcare"/><div class="field-error" id="err-previous_client_industry">This field is required.</div></div>
-        <div class="field-group"><label for="tools_used">List all tools from previous work <span class="req">*</span></label><textarea id="tools_used" name="tools_used" rows="4" placeholder="e.g. Google Workspace, Slack, Zoom, HubSpot, Canva, GoHighLevel, Trello..."></textarea><div class="field-error" id="err-tools_used">Please list at least a few tools.</div></div>
-        <div class="field-group"><label for="skills_summary">Briefly outline your relevant skills and experience <span class="req">*</span></label><textarea id="skills_summary" name="skills_summary" rows="5" placeholder="Describe your key skills, relevant experience, and what makes you a strong candidate..."></textarea><div class="field-error" id="err-skills_summary">This field is required.</div></div>
-        <div class="field-group"><label for="other_languages">Other languages spoken <span class="hint">(optional)</span></label><input type="text" id="other_languages" name="other_languages" placeholder='e.g. Spanish, Mandarin, or "None"'/></div>
-        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Rate & Portfolio</div><div class="form-section-line"></div></div>
-        <div class="field-group"><label for="pay_per_hour">Expected Pay Per Hour (USD) <span class="req">*</span></label><input type="text" id="pay_per_hour" name="pay_per_hour" placeholder="e.g. $5/hr, $8–$10/hr"/><div class="field-error" id="err-pay_per_hour">This field is required.</div></div>
-        <div class="field-group"><label for="portfolio_url">Sample Work / Portfolio Link <span class="req">*</span></label><input type="text" id="portfolio_url" name="portfolio_url" placeholder='Portfolio link or type "N/A"'/><div class="field-error" id="err-portfolio_url">Please enter a link or "N/A".</div></div>
+        <div class="field-group" id="sr_client_details_wrap" style="display:none"><label for="sr_client_details">If yes, provide the client name and your last day with them. Put "N/A" if not applicable. <span class="hint">(optional)</span></label><textarea id="sr_client_details" name="sr_client_details" rows="2" placeholder='e.g. "John Smith Real Estate — Last day: March 15, 2024" or "N/A"'></textarea></div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">VA Training</div><div class="form-section-line"></div></div>
+        <div class="field-group">
+          <label>Have you attended any formal Virtual Assistant training program or course? <span class="req">*</span></label>
+          <div class="radio-group" id="va_training">
+            <label class="radio-option" onclick="selectRadio(this,'va_training')"><input type="radio" name="va_training" value="Yes - completed formal VA training"/> <span>Yes — I have completed a formal VA training program</span></label>
+            <label class="radio-option" onclick="selectRadio(this,'va_training')"><input type="radio" name="va_training" value="Yes - currently enrolled in VA training"/> <span>Yes — I am currently enrolled in a VA training program</span></label>
+            <label class="radio-option" onclick="selectRadio(this,'va_training')"><input type="radio" name="va_training" value="No - self-taught with practical work experience"/> <span>No — I am self-taught with practical work experience</span></label>
+            <label class="radio-option" onclick="selectRadio(this,'va_training')"><input type="radio" name="va_training" value="No - no formal VA training yet"/> <span>No — I have not undergone any formal VA training yet</span></label>
+            <label class="radio-option" onclick="selectRadio(this,'va_training')"><input type="radio" name="va_training" value="Other"/> <span>Other</span></label>
+          </div>
+          <div class="field-error" id="err-va_training">Please select an option.</div>
+        </div>
+        <div class="field-group" id="va_training_details_wrap" style="display:none"><label for="va_training_details">If you attended VA training, please name the program, provider, and year completed. <span class="hint">(optional)</span></label><textarea id="va_training_details" name="va_training_details" rows="2" placeholder="e.g. VA Bootcamp by VirtualStaff.ph — completed 2023"></textarea></div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Skills, Tools & Languages</div><div class="form-section-line"></div></div>
+        <div class="field-group"><label for="tools_used">Please list the tools and software you are proficient in, along with your proficiency level and years of use. <span class="req">*</span> <span class="hint">(Rate each 1–10, 10 being highest)</span></label><textarea id="tools_used" name="tools_used" rows="5" placeholder="e.g. Google Workspace — 9/10 — 3 years&#10;Canva — 8/10 — 2 years&#10;GoHighLevel — 7/10 — 1 year"></textarea><div class="field-error" id="err-tools_used">Please list at least a few tools.</div></div>
+        <div class="field-group"><label for="other_languages">Do you speak any other languages? <span class="req">*</span> <span class="hint">(Rate speaking and writing proficiency 1–10 per language)</span></label><textarea id="other_languages" name="other_languages" rows="3" placeholder="e.g. Spanish — Speaking: 8/10 — Writing: 7/10&#10;Or type &quot;None&quot; if not applicable"></textarea><div class="field-error" id="err-other_languages">This field is required.</div></div>
+        <div class="field-group"><label for="skills_summary">Briefly outline your relevant skills and experience. <span class="req">*</span></label><textarea id="skills_summary" name="skills_summary" rows="5" placeholder="Describe your key skills, relevant experience, and what makes you a strong candidate for this role..."></textarea><div class="field-error" id="err-skills_summary">This field is required.</div></div>
+
+        <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Availability & Rate</div><div class="form-section-line"></div></div>
+        <div class="field-group">
+          <label>How much working hours can you commit in a week? <span class="req">*</span></label>
+          <div class="radio-group" id="weekly_hours">
+            <label class="radio-option" onclick="selectRadio(this,'weekly_hours')"><input type="radio" name="weekly_hours" value="20 hours (part-time)"/> <span>20 hours (part-time)</span></label>
+            <label class="radio-option" onclick="selectRadio(this,'weekly_hours')"><input type="radio" name="weekly_hours" value="40 hours (full-time)"/> <span>40 hours (full-time)</span></label>
+            <label class="radio-option" onclick="selectRadio(this,'weekly_hours')"><input type="radio" name="weekly_hours" value="Both"/> <span>Both</span></label>
+          </div>
+          <div class="field-error" id="err-weekly_hours">Please select an option.</div>
+        </div>
+        <div class="field-group">
+          <label>Which day(s) do you prefer as your weekly rest day(s)? <span class="req">*</span></label>
+          <div class="radio-group" id="rest_days">
+            <label class="radio-option" onclick="selectRadio(this,'rest_days')"><input type="radio" name="rest_days" value="Weekends"/> <span>Weekends</span></label>
+            <label class="radio-option" onclick="selectRadio(this,'rest_days')"><input type="radio" name="rest_days" value="Flexible — no strong preference"/> <span>Flexible — no strong preference</span></label>
+          </div>
+          <div class="field-error" id="err-rest_days">Please select an option.</div>
+        </div>
+        <div class="field-row">
+          <div class="field-group"><label for="min_rate">Minimum Expected Hourly Rate (USD) <span class="req">*</span></label><input type="text" id="min_rate" name="min_rate" placeholder="e.g. $5"/><div class="field-error" id="err-min_rate">This field is required.</div></div>
+          <div class="field-group"><label for="max_rate">Maximum Expected Hourly Rate (USD) <span class="req">*</span></label><input type="text" id="max_rate" name="max_rate" placeholder="e.g. $10"/><div class="field-error" id="err-max_rate">This field is required.</div></div>
+        </div>
+        <div class="field-group"><label for="portfolio_url">Share the link of your sample work/portfolio; otherwise put "N/A" if none. <span class="req">*</span></label><input type="text" id="portfolio_url" name="portfolio_url" placeholder='Portfolio link or type "N/A"'/><div class="field-error" id="err-portfolio_url">Please enter a link or "N/A".</div></div>
+
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Emergency Contact</div><div class="form-section-line"></div></div>
         <div class="field-row">
           <div class="field-group"><label for="emergency_contact_name">Emergency Contact Name <span class="req">*</span></label><input type="text" id="emergency_contact_name" name="emergency_contact_name" placeholder="Full name"/><div class="field-error" id="err-emergency_contact_name">This field is required.</div></div>
@@ -445,6 +486,7 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
       <div class="form-body">
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Computer</div><div class="form-section-line"></div></div>
         <div class="field-group"><label>Do you own a PC or Mac? <span class="req">*</span></label><div class="radio-group" id="computer_type"><label class="radio-option" onclick="selectRadio(this,'computer_type')"><input type="radio" name="computer_type" value="Windows Laptop/Desktop"/> <span>Windows Laptop/Desktop</span></label><label class="radio-option" onclick="selectRadio(this,'computer_type')"><input type="radio" name="computer_type" value="Macbook Air/Pro/iMac"/> <span>Macbook Air/Pro/iMac</span></label><label class="radio-option" onclick="selectRadio(this,'computer_type')"><input type="radio" name="computer_type" value="All of the Above"/> <span>All of the Above</span></label></div><div class="field-error" id="err-computer_type">Please select an option.</div></div>
+        <div class="field-group"><label>Do you have a backup power source and internet connection? <span class="req">*</span></label><div class="radio-group inline" id="backup_power_internet"><label class="radio-option" onclick="selectRadio(this,'backup_power_internet')"><input type="radio" name="backup_power_internet" value="Yes"/> <span>Yes</span></label><label class="radio-option" onclick="selectRadio(this,'backup_power_internet')"><input type="radio" name="backup_power_internet" value="No"/> <span>No</span></label></div><div class="field-error" id="err-backup_power_internet">Please select an option.</div></div>
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Device Specs</div><div class="form-section-line"></div></div>
         <div class="field-group"><label>Upload screenshot of device specifications <span class="req">*</span> <span class="hint">(processor, RAM, OS)</span></label><div class="file-upload-wrap"><input type="file" class="file-upload-input" id="device_specs_file" name="device_specs_file" accept="image/*,.pdf" onchange="handleFileChange(this,'device_specs_box','device_specs_name')"/><div class="file-upload-box" id="device_specs_box"><div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="file-upload-label"><span>Click to upload</span> or drag & drop</div><div class="file-upload-sub">PNG, JPG, PDF accepted</div></div></div><div class="file-name-display" id="device_specs_name"></div><div class="field-error" id="err-device_specs_file">Please upload your device specs screenshot.</div></div>
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Internet Speed Test</div><div class="form-section-line"></div></div>
@@ -495,34 +537,81 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 <div class="modal-overlay" id="terms-modal" role="dialog" aria-modal="true">
   <div class="modal-box">
     <div class="modal-header">
-      <div class="modal-header-left"><h2>Terms, Conditions & Privacy Policy</h2><p>Sphere Rocket VA — General Application</p></div>
+      <div class="modal-header-left"><h2>Terms, Conditions &amp; Privacy Policy</h2><p>Sphere Rocket VA &mdash; General Application</p></div>
       <button class="modal-close" onclick="closeTermsModal()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="modal-body">
       <div class="modal-links">
-        <a class="modal-link" href="https://www.spherejobs.ph/terms-conditions" target="_blank" rel="noopener"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Terms & Conditions</a>
+        <a class="modal-link" href="https://www.spherejobs.ph/terms-conditions" target="_blank" rel="noopener"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Terms &amp; Conditions</a>
         <a class="modal-link" href="https://www.spherejobs.ph/privacy-policy" target="_blank" rel="noopener"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Privacy Policy</a>
       </div>
-      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.7;">Click each statement to acknowledge it. You must agree to all before submitting.</p>
-      <div class="terms-rule" id="rule-1" onclick="agreeRule('rule-1')"><div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="terms-rule-text"><strong>Platform Role.</strong> I understand Sphere Rocket VA is not my employer and does not guarantee job placement or hiring. It is a U.S.-based tech platform that connects business owners and Virtual Assistants for potential working relationships.</div></div>
-      <div class="terms-rule" id="rule-2" onclick="agreeRule('rule-2')"><div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="terms-rule-text"><strong>Hiring Decisions.</strong> All hiring decisions are made solely by the client. Compensation, contracts, and work terms are negotiated directly between the client and VA. Sphere Rocket VA is not a party to these agreements.</div></div>
-      <div class="terms-rule" id="rule-3" onclick="agreeRule('rule-3')"><div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="terms-rule-text"><strong>No Management Role.</strong> Sphere Rocket VA does not negotiate pay, assign tasks, manage schedules, or supervise the work of any Virtual Assistant.</div></div>
-      <div class="terms-rule" id="rule-4" onclick="agreeRule('rule-4')"><div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="terms-rule-text"><strong>Vetting Interviews.</strong> I understand that vetting interviews are not job interviews, but internal assessments used for profile review and future matching. Not all applicants will be matched or selected.</div></div>
-      <div class="terms-rule" id="rule-5" onclick="agreeRule('rule-5')"><div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="terms-rule-text"><strong>Application Updates.</strong> I may update or resubmit my application at any time to reflect new skills or availability. Visibility depends on client demand, skill alignment, and platform needs.</div></div>
-      <div class="terms-rule" id="rule-6" onclick="agreeRule('rule-6')"><div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="terms-rule-text"><strong>Data Privacy & Accuracy.</strong> I agree to the Terms & Conditions and Privacy Policy of Sphere Rocket VA. I confirm all information provided is accurate and I consent to the processing of my data for recruitment purposes.</div></div>
-    </div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.7;">Click each statement below to acknowledge it. You must agree to all 8 items before submitting.</p>
+
+      <div class="terms-rule" id="rule-1" onclick="agreeRule('rule-1')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>Platform Role.</strong> I understand Sphere Rocket VA is not my employer and does not guarantee job placement or hiring. It is a U.S.-based tech platform that connects business owners and Virtual Assistants for potential working relationships.</div>
+      </div>
+
+      <div class="terms-rule" id="rule-2" onclick="agreeRule('rule-2')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>Hiring Decisions.</strong> Sphere Rocket VA may recommend or introduce profiles based on fit, but all hiring decisions are made solely by the client. Sphere Rocket VA is not a party to compensation, contracts, or work term agreements.</div>
+      </div>
+
+      <div class="terms-rule" id="rule-3" onclick="agreeRule('rule-3')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>No Management Role.</strong> Sphere Rocket VA does not negotiate pay, assign tasks, manage schedules, or supervise the work of any Virtual Assistant.</div>
+      </div>
+
+      <div class="terms-rule" id="rule-4" onclick="agreeRule('rule-4')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>Compensation & Contracts.</strong> Compensation, contracts, and work terms are negotiated directly between the client and VA. Sphere Rocket VA is not a party to these agreements.</div>
+      </div>
+
+      <div class="terms-rule" id="rule-5" onclick="agreeRule('rule-5')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>Vetting Interviews.</strong> I understand that vetting interviews are not job interviews, but internal assessments used for profile review and future matching.</div>
+      </div>
+
+      <div class="terms-rule" id="rule-6" onclick="agreeRule('rule-6')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>Visibility &amp; Selection.</strong> Not all applicants will be matched or selected. Visibility depends on client demand, skill alignment, and platform needs.</div>
+      </div>
+
+      <div class="terms-rule" id="rule-7" onclick="agreeRule('rule-7')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>Application Updates.</strong> I may update or resubmit my application at any time to reflect new skills, tools, availability, or other relevant changes.</div>
+      </div>
+
+      <div class="terms-rule" id="rule-8" onclick="agreeRule('rule-8')">
+        <div class="terms-rule-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="terms-rule-text"><strong>Data Privacy &amp; Accuracy.</strong> I agree to the Terms &amp; Conditions and Privacy Policy of Sphere Rocket VA. I confirm all information provided is accurate, and I consent to the collection and processing of my data for recruitment purposes.</div>
+      </div>
+
+    </div><!-- /modal-body -->
     <div class="modal-footer">
-      <div class="modal-agree-progress">Agreed: <strong id="agreed-count">0</strong> / 6</div>
-      <button class="btn-agree" id="btn-agree-all" disabled onclick="agreeAllAndClose()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>I Agree to All</button>
+      <div class="modal-agree-progress">Agreed: <strong id="agreed-count">0</strong> / 8</div>
+      <button class="btn-agree" id="btn-agree-all" disabled onclick="agreeAllAndClose()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        I Agree to All
+      </button>
     </div>
-  </div>
-</div>
+  </div><!-- /modal-box -->
+</div><!-- /modal-overlay -->
 
 <!-- TOAST -->
 <div class="toast" id="toast"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span id="toast-msg"></span></div>
 <script>
 const SUBMIT_ENDPOINT = '/.netlify/functions/submit';
 const TOTAL_STEPS = 4;
+
+// ── sendHeight — defined here first so ALL code below can safely call it ──────
+// The postMessage iframe resize listener lives in the second <script> block but
+// we expose the function on window early so nothing crashes during init.
+function sendHeight() {
+  var h = document.body.scrollHeight;
+  if (window.parent && window.parent !== window)
+    window.parent.postMessage({ type: 'sr-resize', height: h }, '*');
+}
 
 // ── POSITIONS DATA ────────────────────────────────────────────────────────────
 const POSITIONS = [
@@ -597,12 +686,16 @@ function buildPositionList(filter) {
   const filtered = POSITIONS.filter(p => p.name.toLowerCase().includes(term));
   if (!filtered.length) { list.innerHTML = ''; noRes.style.display = 'block'; return; }
   noRes.style.display = 'none';
-  list.innerHTML = filtered.map(p =>
-    `<div class="position-item ${selectedPosition === p.name ? 'selected' : ''}" onclick="selectPosition(${JSON.stringify(p.name)})">
-      <div class="position-item-dot"></div>
-      <div class="position-item-name">${p.name}</div>
-    </div>`
-  ).join('');
+  list.innerHTML = filtered.map(function(p) {
+    var safeName = p.name.replace(/&/g,"\&amp;").replace(/"/g,"\&quot;");
+    var sel = selectedPosition === p.name ? " selected" : "";
+    return "<div class=\"position-item" + sel + "\" data-pos-name=\"" + safeName + "\"><div class=\"position-item-dot\"></div><div class=\"position-item-name\">" + p.name + "</div></div>";
+  }).join("");
+  list.querySelectorAll(".position-item").forEach(function(item) {
+    item.addEventListener("click", function() {
+      selectPosition(this.getAttribute("data-pos-name"));
+    });
+  });
 }
 
 function filterPositions(val) { buildPositionList(val); }
@@ -687,9 +780,9 @@ function prevStep(from) { currentStep = from - 1; showStep(currentStep); }
 
 // ── VALIDATION ────────────────────────────────────────────────────────────────
 const stepFields = {
-  1: ['full_name','email','phone','facebook_url','referral_source'],
-  2: ['education_level','degree','has_va_experience','previous_sr_client','previous_client_industry','tools_used','skills_summary','pay_per_hour','portfolio_url','emergency_contact_name','emergency_contact_number'],
-  3: ['computer_type','device_specs_file','speed_test_file','resume_file','gov_id_type','gov_id_file','disc_file','disc_style'],
+  1: ['full_name','email','phone','complete_address','facebook_url','linkedin_instagram_url','referral_source'],
+  2: ['college_degree','has_va_experience','previous_client_industry','previous_sr_client','va_training','tools_used','other_languages','skills_summary','weekly_hours','rest_days','min_rate','max_rate','portfolio_url','emergency_contact_name','emergency_contact_number'],
+  3: ['computer_type','backup_power_internet','device_specs_file','speed_test_file','resume_file','gov_id_type','gov_id_file','disc_file','disc_style'],
   4: ['terms_agreed']
 };
 function validateStep(step) {
@@ -697,7 +790,7 @@ function validateStep(step) {
   (stepFields[step] || []).forEach(f => {
     const err = document.getElementById('err-' + f);
     let ok = false;
-    if (['has_va_experience','previous_sr_client','computer_type'].includes(f)) {
+    if (['has_va_experience','previous_sr_client','computer_type','backup_power_internet','weekly_hours','rest_days','va_training'].includes(f)) {
       ok = !!document.querySelector(`input[name="${f}"]:checked`);
     } else if (f === 'terms_agreed') {
       ok = document.getElementById('terms_agreed').checked;
@@ -712,7 +805,7 @@ function validateStep(step) {
     }
     if (err) err.classList.toggle('show', !ok);
     const el = document.getElementById(f);
-    if (el && !['has_va_experience','previous_sr_client','computer_type'].includes(f)) el.classList.toggle('error', !ok);
+    if (el && !['has_va_experience','previous_sr_client','computer_type','backup_power_internet','weekly_hours','rest_days','va_training'].includes(f)) el.classList.toggle('error', !ok);
     if (!ok) valid = false;
   });
   if (step === 1 && document.getElementById('referral_source').value === 'Sphere Rocket Team Members') {
@@ -761,9 +854,25 @@ document.getElementById('referral_source').addEventListener('change', function()
   sendHeight();
 });
 
+// Show sr_client_details when previous_sr_client = Yes
+// Show va_training_details when va_training starts with Yes
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.name === 'previous_sr_client') {
+    var wrap = document.getElementById('sr_client_details_wrap');
+    if (wrap) wrap.style.display = e.target.value === 'Yes' ? 'block' : 'none';
+    sendHeight();
+  }
+  if (e.target && e.target.name === 'va_training') {
+    var wrap = document.getElementById('va_training_details_wrap');
+    if (wrap) wrap.style.display = e.target.value.startsWith('Yes') ? 'block' : 'none';
+    sendHeight();
+  }
+});
+
+
 // ── TERMS MODAL ───────────────────────────────────────────────────────────────
 let agreedRules = new Set();
-const totalRules = 6;
+const totalRules = 8;
 function openTermsModal(e) { if (e) e.stopPropagation(); document.getElementById('terms-modal').classList.add('open'); document.body.style.overflow = 'hidden'; }
 function closeTermsModal() { document.getElementById('terms-modal').classList.remove('open'); document.body.style.overflow = ''; }
 function handleTermsClick(e) { if (!e.target.classList.contains('open-terms-link')) openTermsModal(e); }
@@ -796,19 +905,24 @@ function buildReviewSummary() {
     ]},
     { title:'Personal Information', rows:[
       ['Full Name', val('full_name')],['Email', val('email')],['Phone', val('phone')],
+      ['Alt. Phone', val('alternative_phone') || '—'],['Address', val('complete_address')],
       ['Facebook', val('facebook_url')],['LinkedIn/Instagram', val('linkedin_instagram_url') || '—'],
       ['How You Found Us', val('referral_source')],['Internal Referral', val('internal_referral') || '—'],
     ]},
     { title:'Background & Experience', rows:[
-      ['Education', val('education_level')],['Degree', val('degree')],
-      ['VA Experience', radioVal('has_va_experience')],['Previous SR Client', radioVal('previous_sr_client')],
-      ['Previous Industry', val('previous_client_industry')],['Tools Used', val('tools_used')],
-      ['Skills Summary', val('skills_summary')],['Other Languages', val('other_languages') || '—'],
-      ['Expected Rate', val('pay_per_hour')],['Portfolio', val('portfolio_url')],
+      ['College Degree', val('college_degree')],
+      ['VA Experience', radioVal('has_va_experience')],['Previous Industry', val('previous_client_industry')],
+      ['Previous SR Client', radioVal('previous_sr_client')],['SR Client Details', val('sr_client_details') || 'N/A'],
+      ['VA Training', radioVal('va_training')],['Training Details', val('va_training_details') || 'N/A'],
+      ['Tools Used', val('tools_used')],['Other Languages', val('other_languages')],
+      ['Skills Summary', val('skills_summary')],
+      ['Weekly Hours', radioVal('weekly_hours')],['Rest Days', radioVal('rest_days')],
+      ['Min Rate (USD)', val('min_rate')],['Max Rate (USD)', val('max_rate')],
+      ['Portfolio', val('portfolio_url')],
       ['Emergency Contact', val('emergency_contact_name') + ' · ' + val('emergency_contact_number')],
     ]},
     { title:'Tech & Documents', rows:[
-      ['Computer Type', radioVal('computer_type')],
+      ['Computer Type', radioVal('computer_type')],['Backup Power & Internet', radioVal('backup_power_internet')],
       ['Device Specs', fileInfo('device_specs_file')],['Speed Test', fileInfo('speed_test_file')],
       ['Resume', fileInfo('resume_file')],['Government ID Type', val('gov_id_type')],
       ['Government ID', fileInfo('gov_id_file')],['DISC Result', fileInfo('disc_file')],
@@ -844,25 +958,33 @@ async function submitApplication() {
       full_name:                val('full_name'),
       email:                    val('email'),
       phone:                    val('phone'),
+      alternative_phone:        val('alternative_phone'),
+      complete_address:         val('complete_address'),
       facebook_url:             val('facebook_url'),
       linkedin_instagram_url:   val('linkedin_instagram_url'),
       referral_source:          val('referral_source'),
       internal_referral:        val('internal_referral'),
       // ── Step 2
-      education_level:          val('education_level'),
-      degree:                   val('degree'),
+      college_degree:           val('college_degree'),
       has_va_experience:        radioVal('has_va_experience'),
-      previous_sr_client:       radioVal('previous_sr_client'),
       previous_client_industry: val('previous_client_industry'),
+      previous_sr_client:       radioVal('previous_sr_client'),
+      sr_client_details:        val('sr_client_details'),
+      va_training:              radioVal('va_training'),
+      va_training_details:      val('va_training_details'),
       tools_used:               val('tools_used'),
-      skills_summary:           val('skills_summary'),
       other_languages:          val('other_languages'),
-      pay_per_hour:             val('pay_per_hour'),
+      skills_summary:           val('skills_summary'),
+      weekly_hours_commitment:  radioVal('weekly_hours'),
+      preferred_rest_days:      radioVal('rest_days'),
+      min_rate_usd:             val('min_rate'),
+      max_rate_usd:             val('max_rate'),
       portfolio_url:            val('portfolio_url'),
       emergency_contact_name:   val('emergency_contact_name'),
       emergency_contact_number: val('emergency_contact_number'),
       // ── Step 3
       computer_type:            radioVal('computer_type'),
+      backup_power_internet:    radioVal('backup_power_internet'),
       gov_id_type:              val('gov_id_type'),
       disc_style:               val('disc_style'),
       // ── Step 4
@@ -920,20 +1042,17 @@ buildPositionList('');
 showScreen('screen-1');
 </script>
 
-<!-- IFRAME RESIZE — postMessage to Webflow parent -->
+<!-- IFRAME RESIZE — ResizeObserver keeps iframe height in sync with Webflow parent -->
 <script>
 (function () {
-  var PARENT_ORIGIN = '*';
-  // Tighten once live: var PARENT_ORIGIN = 'https://spherejobs.webflow.io';
-  function sendHeight() {
-    var h = document.body.scrollHeight;
-    if (window.parent && window.parent !== window)
-      window.parent.postMessage({ type: 'sr-resize', height: h }, PARENT_ORIGIN);
-  }
-  window.sendHeight = sendHeight;
+  // sendHeight is already defined in the main script block above.
+  // This block just sets up the persistent observers.
   window.addEventListener('load', sendHeight);
-  if (window.ResizeObserver) new ResizeObserver(sendHeight).observe(document.body);
-  else setInterval(sendHeight, 300);
+  if (window.ResizeObserver) {
+    new ResizeObserver(sendHeight).observe(document.body);
+  } else {
+    setInterval(sendHeight, 300);
+  }
   document.addEventListener('click', function() { setTimeout(sendHeight, 350); });
 })();
 </script>
