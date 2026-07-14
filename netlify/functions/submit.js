@@ -1,27 +1,23 @@
 // netlify/functions/submit.js
 //
-// Secure proxy between the application form and the Zapier webhook.
-// The ZAPIER_WEBHOOK_URL and CHILD_KEY are stored as Netlify Environment
-// Variables — they are NEVER visible in the browser or page source.
+// Secure proxy — receives multipart/form-data (text fields + file uploads)
+// from the application form, then forwards everything directly to Zapier
+// as a multipart POST. No third-party file hosting needed.
 //
-// Flow:
-//   Browser (multipart FormData)
-//     → /.netlify/functions/submit  (this file, runs server-side)
-//       → Zapier Catch Hook (with files + all fields)
-//         → Manatal "Create Candidate" action
+// Required environment variables (set in Netlify dashboard):
+//   ZAPIER_WEBHOOK_URL   — your Zapier catch hook URL
+//   CHILD_KEY            — secret key checked by Zapier Filter step
+//   ALLOWED_ORIGINS      — comma-separated allowed origins (optional)
+//                          e.g. https://jovial-trifle-9a780d.netlify.app
 
 const https = require('https');
 const http  = require('http');
 const { URL } = require('url');
 
-// ─── Helper: forward a multipart/form-data request to Zapier ──────────────
-// Netlify Functions receive the raw body as a Buffer (base64 when binary).
-// We re-stream it directly to Zapier preserving the original Content-Type
-// header (which contains the multipart boundary Zapier needs to parse files).
-
-function forwardRequest(targetUrl, method, headers, body) {
+// ── Forward raw multipart body straight to Zapier ────────────────────────────
+function forwardToZapier(webhookUrl, headers, body) {
   return new Promise((resolve, reject) => {
-    const parsed  = new URL(targetUrl);
+    const parsed  = new URL(webhookUrl);
     const isHttps = parsed.protocol === 'https:';
     const lib     = isHttps ? https : http;
 
@@ -29,7 +25,7 @@ function forwardRequest(targetUrl, method, headers, body) {
       hostname: parsed.hostname,
       port:     parsed.port || (isHttps ? 443 : 80),
       path:     parsed.pathname + parsed.search,
-      method,
+      method:   'POST',
       headers,
     };
 
@@ -40,80 +36,103 @@ function forwardRequest(targetUrl, method, headers, body) {
     });
 
     req.on('error', reject);
-
-    if (body) req.write(body);
+    req.write(body);
     req.end();
   });
 }
 
+// ── Main handler ──────────────────────────────────────────────────────────────
 exports.handler = async function(event) {
-  // ── 1. Only accept POST requests ────────────────────────────────────────
+
+  // Only accept POST
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  // ── 2. Pull secrets from environment variables (never from client) ───────
+  // ── Secrets from Netlify env vars (never exposed to browser) ───────────────
   const ZAPIER_WEBHOOK_URL = process.env.ZAPIER_WEBHOOK_URL;
-  const CHILD_KEY          = process.env.CHILD_KEY;
+  const CHILD_KEY          = process.env.CHILD_KEY || '';
 
   if (!ZAPIER_WEBHOOK_URL) {
-    console.error('ZAPIER_WEBHOOK_URL environment variable is not set.');
-    return { statusCode: 500, body: 'Server configuration error.' };
+    console.error('ZAPIER_WEBHOOK_URL is not set in environment variables.');
+    return { statusCode: 500, body: 'Server configuration error: missing webhook URL.' };
   }
 
-  // ── 3. Basic origin / referrer guard (optional but recommended) ──────────
-  // Rejects submissions not coming from your own domain.
-  // Update ALLOWED_ORIGIN to match your Netlify site URL or custom domain.
-  const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || ''; // e.g. https://apply.sphererocketva.com
-  const origin  = event.headers['origin']  || '';
-  const referer = event.headers['referer'] || '';
+  // ── CORS / origin guard ────────────────────────────────────────────────────
+  // When embedded in Webflow via iframe, the origin is the Netlify URL
+  // (not the Webflow URL), so only whitelist your Netlify/custom domain here.
+  // Leave ALLOWED_ORIGINS empty during testing to allow all origins.
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map(o => o.trim())
+    .filter(Boolean);
 
-  if (ALLOWED_ORIGIN && !origin.startsWith(ALLOWED_ORIGIN) && !referer.startsWith(ALLOWED_ORIGIN)) {
-    return { statusCode: 403, body: 'Forbidden: Origin not allowed.' };
+  const origin  = (event.headers['origin']  || '').trim();
+  const referer = (event.headers['referer'] || '').trim();
+
+  if (allowedOrigins.length > 0) {
+    const isAllowed = allowedOrigins.some(
+      o => origin.startsWith(o) || referer.startsWith(o)
+    );
+    if (!isAllowed) {
+      console.warn(`Blocked — origin: "${origin}" referer: "${referer}"`);
+      return { statusCode: 403, body: 'Forbidden: origin not allowed.' };
+    }
   }
 
-  // ── 4. Rate-limit hint (Netlify handles this via netlify.toml, see below) ─
-  // For extra server-side rate limiting you can integrate a KV store or
-  // upstash/redis — but for a low-traffic recruitment form, netlify.toml
-  // rate limiting is sufficient.
+  const responseOrigin =
+    allowedOrigins.find(o => origin.startsWith(o)) ||
+    allowedOrigins[0] ||
+    '*';
 
-  // ── 5. Forward the multipart body to Zapier ──────────────────────────────
-  // event.body is the raw body string; event.isBase64Encoded tells us
-  // whether Netlify base64-encoded it (it will for binary/multipart).
+  // ── Decode body ────────────────────────────────────────────────────────────
+  // Netlify base64-encodes binary bodies (multipart with file uploads).
+  // Decode it back to raw bytes so Zapier can parse the files correctly.
   const rawBody = event.isBase64Encoded
     ? Buffer.from(event.body, 'base64')
     : Buffer.from(event.body || '', 'utf8');
 
-  // Build forwarding headers — keep Content-Type (with boundary) intact
-  // and inject the child_key as a custom header for Zapier filter
+  // ── Validate content-type ──────────────────────────────────────────────────
+  const contentType = event.headers['content-type'] || '';
+  if (!contentType.includes('multipart/form-data')) {
+    return { statusCode: 400, body: 'Expected multipart/form-data.' };
+  }
+
+  // ── Forward to Zapier ──────────────────────────────────────────────────────
+  // We forward the exact multipart body Netlify received, preserving
+  // the boundary and all file data. Zapier's Catch Hook natively parses
+  // multipart payloads and exposes each field (including files) in the Zap.
   const forwardHeaders = {
-    'Content-Type':   event.headers['content-type'] || 'multipart/form-data',
+    'Content-Type':   contentType,          // must keep boundary intact
     'Content-Length': rawBody.length,
-    'X-Child-Key':    CHILD_KEY || '',           // Zapier filter can check this header
+    'X-Child-Key':    CHILD_KEY,            // Zapier Filter step checks this
     'X-Source':       'sphere-rocket-va-form',
-    'User-Agent':     'SphereRocketVA-Form/1.0',
+    'User-Agent':     'SphereRocketVA-Proxy/1.0',
   };
 
   try {
-    const result = await forwardRequest(ZAPIER_WEBHOOK_URL, 'POST', forwardHeaders, rawBody);
+    const result = await forwardToZapier(ZAPIER_WEBHOOK_URL, forwardHeaders, rawBody);
 
-    // Zapier Catch Hooks return 200 on success
     if (result.status >= 200 && result.status < 300) {
+      console.log('Zapier accepted submission:', result.status);
       return {
         statusCode: 200,
         headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': ALLOWED_ORIGIN || '*',
+          'Content-Type':                'application/json',
+          'Access-Control-Allow-Origin': responseOrigin,
         },
         body: JSON.stringify({ success: true }),
       };
     } else {
-      console.error('Zapier responded with status:', result.status, result.body);
-      return { statusCode: 502, body: 'Upstream error from Zapier.' };
+      console.error('Zapier returned error:', result.status, result.body);
+      return {
+        statusCode: 502,
+        body: `Upstream error from Zapier: ${result.status}`,
+      };
     }
 
   } catch (err) {
-    console.error('Error forwarding to Zapier:', err);
-    return { statusCode: 500, body: 'Internal server error.' };
+    console.error('Failed to reach Zapier:', err.message);
+    return { statusCode: 500, body: 'Internal server error: could not reach webhook.' };
   }
 };
