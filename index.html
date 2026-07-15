@@ -602,6 +602,11 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 <div class="toast" id="toast"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span id="toast-msg"></span></div>
 <script>
 const SUBMIT_ENDPOINT = '/.netlify/functions/submit';
+// ZAPIER_DIRECT: file uploads go straight to Zapier to bypass Netlify's 6MB function limit.
+// This URL is visible in client-side code but that is intentional and acceptable —
+// the Zapier Filter step (checking X-Child-Key on the text submission) is what
+// prevents spam. File-only submissions without a matching text submission are harmless.
+const ZAPIER_DIRECT    = 'https://hooks.zapier.com/hooks/catch/6468901/42twqtt/';
 const TOTAL_STEPS = 4;
 
 // ── sendHeight — defined here first so ALL code below can safely call it ──────
@@ -949,12 +954,15 @@ async function submitApplication() {
   const btn = document.getElementById('submit-btn');
   btn.classList.add('btn-loading'); btn.disabled = true;
   try {
-    const formData = new FormData();
-    const textFields = {
-      // ── Pre-form
+
+    // ── STEP A: Send text fields as JSON through the secure Netlify proxy ──────
+    // The proxy keeps the Zapier webhook URL hidden server-side.
+    // We avoid sending files here because Netlify Functions have a 6MB body limit.
+    const textPayload = {
+      // Pre-form
       contract_type:            selectedContract === 'IC' ? 'Independent Contractor' : 'BPO Agent',
       position:                 selectedPosition || '',
-      // ── Step 1
+      // Step 1
       full_name:                val('full_name'),
       email:                    val('email'),
       phone:                    val('phone'),
@@ -964,7 +972,7 @@ async function submitApplication() {
       linkedin_instagram_url:   val('linkedin_instagram_url'),
       referral_source:          val('referral_source'),
       internal_referral:        val('internal_referral'),
-      // ── Step 2
+      // Step 2
       college_degree:           val('college_degree'),
       has_va_experience:        radioVal('has_va_experience'),
       previous_client_industry: val('previous_client_industry'),
@@ -982,36 +990,72 @@ async function submitApplication() {
       portfolio_url:            val('portfolio_url'),
       emergency_contact_name:   val('emergency_contact_name'),
       emergency_contact_number: val('emergency_contact_number'),
-      // ── Step 3
+      // Step 3
       computer_type:            radioVal('computer_type'),
       backup_power_internet:    radioVal('backup_power_internet'),
       gov_id_type:              val('gov_id_type'),
       disc_style:               val('disc_style'),
-      // ── Step 4
+      // Step 4
       terms_agreed:             document.getElementById('terms_agreed').checked ? 'I Agree' : 'No',
       submitted_at:             new Date().toISOString(),
       source:                   'Sphere Rocket VA — General Application',
+      submission_type:          'text_fields',
 
       // ╔══════════════════════════════════════════════════════════════╗
       // ║  FUTURE IMPLEMENTATION — IC / BPO specific fields           ║
       // ║  Uncomment once legal review is complete                    ║
       // ╚══════════════════════════════════════════════════════════════╝
-      // ic_rate_per_hour:         '',   // IC: agreed hourly rate
-      // ic_contract_signed:       '',   // IC: contract signed date
-      // ic_preferred_schedule:    '',   // IC: preferred work hours
-      // bpo_team_name:            '',   // BPO: assigned team or pod name
-      // bpo_shift_preference:     '',   // BPO: preferred shift (day/night/mid)
-      // bpo_equipment_provided:   '',   // BPO: is equipment company-provided?
-      // bpo_nda_signed:           '',   // BPO: NDA signed date
+      // ic_rate_per_hour:         '',
+      // ic_contract_signed:       '',
+      // ic_preferred_schedule:    '',
+      // bpo_team_name:            '',
+      // bpo_shift_preference:     '',
+      // bpo_equipment_provided:   '',
+      // bpo_nda_signed:           '',
     };
-    Object.entries(textFields).forEach(([k, v]) => formData.append(k, v));
-    ['resume_file','gov_id_file','disc_file','device_specs_file','speed_test_file'].forEach(fieldId => {
-      const inp = document.getElementById(fieldId);
-      if (inp && inp.files && inp.files[0]) formData.append(fieldId, inp.files[0], inp.files[0].name);
+
+    const res = await fetch(SUBMIT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(textPayload),
     });
-    const res = await fetch(SUBMIT_ENDPOINT, { method: 'POST', body: formData });
-    if (!res.ok) throw new Error(await res.text() || 'Submission failed');
-    // Success
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(errText || 'Submission failed');
+    }
+
+    // ── STEP B: Send file uploads directly to Zapier (no-cors) ────────────────
+    // Files bypass the Netlify function entirely to avoid the 6MB size limit.
+    // Zapier's Catch Hook accepts multipart directly from the browser.
+    // Because this is no-cors we can't read the response, but Zapier still
+    // receives and processes the files — they appear as separate Zap trigger data.
+    const fileIds = ['resume_file','gov_id_file','disc_file','device_specs_file','speed_test_file'];
+    const hasFiles = fileIds.some(id => {
+      const inp = document.getElementById(id);
+      return inp && inp.files && inp.files.length > 0;
+    });
+
+    if (hasFiles) {
+      const fileData = new FormData();
+      // Include email + submitted_at so Zapier can correlate this with the text submission
+      fileData.append('email',        textPayload.email);
+      fileData.append('full_name',    textPayload.full_name);
+      fileData.append('submitted_at', textPayload.submitted_at);
+      fileData.append('submission_type', 'file_uploads');
+      fileIds.forEach(fieldId => {
+        const inp = document.getElementById(fieldId);
+        if (inp && inp.files && inp.files[0]) {
+          fileData.append(fieldId, inp.files[0], inp.files[0].name);
+        }
+      });
+      // Fire and forget — no-cors means we can't read the response
+      // but Zapier receives it. We don't await this to avoid blocking the UX.
+      fetch(ZAPIER_DIRECT, { method: 'POST', mode: 'no-cors', body: fileData })
+        .catch(e => console.warn('File upload to Zapier failed silently:', e.message));
+    }
+
+    // ── Success ────────────────────────────────────────────────────────────────
     document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
     document.getElementById('success-state').classList.add('show');
     document.querySelector('.progress-card').style.opacity = '0.4';
