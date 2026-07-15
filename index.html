@@ -64,6 +64,36 @@ body { font-family: 'Inter', sans-serif; background: var(--brand-sky); color: va
 .err-contract.show { display: block; }
 
 /* SCREEN 2: POSITION PICKER */
+/* Collapsible picker sections — hidden when a role is selected */
+.picker-selectable { transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease; overflow: hidden; }
+.picker-selectable.collapsed { max-height: 0 !important; opacity: 0; pointer-events: none; }
+.picker-selectable.expanded  { max-height: 600px; opacity: 1; }
+
+/* Compact selected-role bar shown after picking */
+.role-selected-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--brand-accent-light);
+  border-bottom: 1px solid #D8C4FF;
+  gap: 12px;
+}
+.role-selected-bar.show { display: flex; }
+.role-selected-bar-left { display: flex; align-items: center; gap: 10px; }
+.role-selected-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand-accent); flex-shrink: 0; }
+.role-selected-label { font-size: 11px; font-weight: 600; color: var(--brand-accent); text-transform: uppercase; letter-spacing: 0.6px; }
+.role-selected-name  { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.role-change-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: var(--brand-accent);
+  background: var(--surface); border: 1.5px solid #D8C4FF;
+  border-radius: 8px; padding: 6px 12px; cursor: pointer;
+  font-family: 'Inter', sans-serif; transition: all var(--transition);
+  white-space: nowrap; flex-shrink: 0;
+}
+.role-change-btn:hover { background: var(--brand-accent); color: white; border-color: var(--brand-accent); }
+.role-change-btn svg { width: 12px; height: 12px; }
 .position-picker-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; margin-bottom: 24px; }
 .position-picker-header { padding: 20px 24px; border-bottom: 1px solid var(--border); background: var(--surface-alt); }
 .position-picker-header p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
@@ -305,15 +335,40 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
     <p class="screen-subtitle">Select your position. The job description will appear below so you can review requirements before applying.</p>
   </div>
   <div class="position-picker-wrap">
-    <div class="position-picker-header">
-      <div class="position-picker-title">Choose a Position</div>
-      <p>Tap a role to see its full job description</p>
+
+    <!-- Shown when NO role is selected: header + search + list -->
+    <div id="picker-select-section">
+      <div class="picker-selectable expanded" id="picker-header-wrap">
+        <div class="position-picker-header">
+          <div class="position-picker-title">Choose a Position</div>
+          <p>Tap a role to see its full job description</p>
+        </div>
+      </div>
+      <div class="picker-selectable expanded" id="picker-search-wrap">
+        <div class="position-search-wrap">
+          <input type="text" class="position-search" id="position-search" placeholder="Search positions..." oninput="filterPositions(this.value)"/>
+        </div>
+        <div class="position-list" id="position-list"></div>
+        <div class="position-no-results" id="position-no-results">No positions match your search.</div>
+      </div>
     </div>
-    <div class="position-search-wrap">
-      <input type="text" class="position-search" id="position-search" placeholder="Search positions..." oninput="filterPositions(this.value)"/>
+
+    <!-- Shown when a role IS selected: compact bar + change button -->
+    <div class="role-selected-bar" id="role-selected-bar">
+      <div class="role-selected-bar-left">
+        <div class="role-selected-dot"></div>
+        <div>
+          <div class="role-selected-label">Selected Role</div>
+          <div class="role-selected-name" id="role-selected-name">—</div>
+        </div>
+      </div>
+      <button class="role-change-btn" onclick="expandPickerList()">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+        Change Role
+      </button>
     </div>
-    <div class="position-list" id="position-list"></div>
-    <div class="position-no-results" id="position-no-results">No positions match your search.</div>
+
+    <!-- JD panel — always below, shown when role is selected -->
     <div class="jd-panel" id="jd-panel">
       <button class="jd-accordion-trigger" aria-expanded="true" onclick="toggleJDAccordion(this)">
         <div class="jd-accordion-trigger-left">
@@ -329,6 +384,7 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
         <div class="jd-accordion-content" id="jd-content"></div>
       </div>
     </div>
+
   </div>
   <div class="err-position" id="err-position">Please select a position to continue.</div>
   <div class="screen-nav">
@@ -679,6 +735,15 @@ function selectContract(type) {
 function goToScreen2() {
   if (!selectedContract) { document.getElementById('err-contract').classList.add('show'); return; }
   showScreen('screen-2');
+  // If coming back from the form via "Change role", re-expand the list
+  // but keep the previously selected position highlighted
+  if (selectedPosition) {
+    expandPickerList();
+    buildPositionList('');
+    renderJDPanel(selectedPosition);
+    // Re-collapse after a tick so the user sees their previous pick highlighted
+    setTimeout(collapsePickerList, 80);
+  }
 }
 
 function goToScreen1() { showScreen('screen-1'); }
@@ -710,6 +775,43 @@ function selectPosition(name) {
   document.getElementById('err-position').classList.remove('show');
   buildPositionList(document.getElementById('position-search').value);
   renderJDPanel(name);
+  collapsePickerList();   // collapse the list and show compact bar
+}
+
+function collapsePickerList() {
+  // Hide the search/list section with animation
+  var searchWrap = document.getElementById('picker-search-wrap');
+  var headerWrap = document.getElementById('picker-header-wrap');
+  if (searchWrap) { searchWrap.classList.remove('expanded'); searchWrap.classList.add('collapsed'); }
+  if (headerWrap) { headerWrap.classList.remove('expanded'); headerWrap.classList.add('collapsed'); }
+  // Show the compact selected-role bar
+  var bar = document.getElementById('role-selected-bar');
+  var nameEl = document.getElementById('role-selected-name');
+  if (bar)    bar.classList.add('show');
+  if (nameEl) nameEl.textContent = selectedPosition;
+  // Scroll picker top into view so JD is visible immediately
+  setTimeout(function() {
+    var wrap = document.querySelector('.position-picker-wrap');
+    if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    sendHeight();
+  }, 50);
+}
+
+function expandPickerList() {
+  // Show the search/list section again
+  var searchWrap = document.getElementById('picker-search-wrap');
+  var headerWrap = document.getElementById('picker-header-wrap');
+  if (searchWrap) { searchWrap.classList.remove('collapsed'); searchWrap.classList.add('expanded'); }
+  if (headerWrap) { headerWrap.classList.remove('collapsed'); headerWrap.classList.add('expanded'); }
+  // Hide the compact bar
+  var bar = document.getElementById('role-selected-bar');
+  if (bar) bar.classList.remove('show');
+  // Focus search so they can type immediately
+  setTimeout(function() {
+    var search = document.getElementById('position-search');
+    if (search) search.focus();
+    sendHeight();
+  }, 200);
 }
 
 function renderJDPanel(name) {
@@ -755,6 +857,15 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
   sendHeight();
+  // If arriving at screen-2 with no prior selection, make sure list is expanded
+  if (id === 'screen-2' && !selectedPosition) {
+    var searchWrap = document.getElementById('picker-search-wrap');
+    var headerWrap = document.getElementById('picker-header-wrap');
+    var bar = document.getElementById('role-selected-bar');
+    if (searchWrap) { searchWrap.classList.remove('collapsed'); searchWrap.classList.add('expanded'); }
+    if (headerWrap) { headerWrap.classList.remove('collapsed'); headerWrap.classList.add('expanded'); }
+    if (bar) bar.classList.remove('show');
+  }
 }
 
 // ── FORM STEPS ────────────────────────────────────────────────────────────────
