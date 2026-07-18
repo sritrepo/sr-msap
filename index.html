@@ -544,16 +544,16 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
         <div class="field-group"><label>Do you own a PC or Mac? <span class="req">*</span></label><div class="radio-group" id="computer_type"><label class="radio-option" onclick="selectRadio(this,'computer_type')"><input type="radio" name="computer_type" value="Windows Laptop/Desktop"/> <span>Windows Laptop/Desktop</span></label><label class="radio-option" onclick="selectRadio(this,'computer_type')"><input type="radio" name="computer_type" value="Macbook Air/Pro/iMac"/> <span>Macbook Air/Pro/iMac</span></label><label class="radio-option" onclick="selectRadio(this,'computer_type')"><input type="radio" name="computer_type" value="All of the Above"/> <span>All of the Above</span></label></div><div class="field-error" id="err-computer_type">Please select an option.</div></div>
         <div class="field-group"><label>Do you have a backup power source and internet connection? <span class="req">*</span></label><div class="radio-group inline" id="backup_power_internet"><label class="radio-option" onclick="selectRadio(this,'backup_power_internet')"><input type="radio" name="backup_power_internet" value="Yes"/> <span>Yes</span></label><label class="radio-option" onclick="selectRadio(this,'backup_power_internet')"><input type="radio" name="backup_power_internet" value="No"/> <span>No</span></label></div><div class="field-error" id="err-backup_power_internet">Please select an option.</div></div>
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Device Specs</div><div class="form-section-line"></div></div>
-        <div class="field-group"><label>Upload screenshot of device specifications <span class="req">*</span> <span class="hint">(processor, RAM, OS)</span></label><div class="file-upload-wrap"><input type="file" class="file-upload-input" id="device_specs_file" name="device_specs_file" accept="image/*,.pdf" onchange="handleFileChange(this,'device_specs_box','device_specs_name')"/><div class="file-upload-box" id="device_specs_box"><div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="file-upload-label"><span>Click to upload</span> or drag & drop</div><div class="file-upload-sub">PNG, JPG, PDF accepted</div></div></div><div class="file-name-display" id="device_specs_name"></div><div class="field-error" id="err-device_specs_file">Please upload your device specs screenshot.</div></div>
+        <div class="field-group"><label>Upload screenshot of device specifications <span class="req">*</span> <span class="hint">(processor, RAM, OS)</span></label><div class="file-upload-wrap"><input type="file" class="file-upload-input" id="device_specs_file" name="device_specs_file" accept="image/*,.pdf" onchange="handleFileChange(this,'device_specs_box','device_specs_name')"/><div class="file-upload-box" id="device_specs_box"><div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="file-upload-label"><span>Click to upload</span> or drag & drop</div><div class="file-upload-sub">PNG, JPG, PDF · Max 500 KB · Tip: use a screenshot for smaller size</div></div></div><div class="file-name-display" id="device_specs_name"></div><div class="field-error" id="err-device_specs_file">Please upload your device specs screenshot.</div></div>
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Internet Speed Test</div><div class="form-section-line"></div></div>
-        <div class="field-group"><label>Upload your internet speed test result <span class="req">*</span></label><div class="file-upload-wrap"><input type="file" class="file-upload-input" id="speed_test_file" name="speed_test_file" accept="image/*,.pdf" onchange="handleFileChange(this,'speed_test_box','speed_test_name')"/><div class="file-upload-box" id="speed_test_box"><div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="file-upload-label"><span>Click to upload</span> or drag & drop</div><div class="file-upload-sub">PNG, JPG, PDF · Test at fast.com or speedtest.net</div></div></div><div class="file-name-display" id="speed_test_name"></div><div class="field-error" id="err-speed_test_file">Please upload your speed test result.</div></div>
+        <div class="field-group"><label>Upload your internet speed test result <span class="req">*</span></label><div class="file-upload-wrap"><input type="file" class="file-upload-input" id="speed_test_file" name="speed_test_file" accept="image/*,.pdf" onchange="handleFileChange(this,'speed_test_box','speed_test_name')"/><div class="file-upload-box" id="speed_test_box"><div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="file-upload-label"><span>Click to upload</span> or drag & drop</div><div class="file-upload-sub">PNG, JPG, PDF · Max 500 KB · Screenshot from fast.com or speedtest.net</div></div></div><div class="file-name-display" id="speed_test_name"></div><div class="field-error" id="err-speed_test_file">Please upload your speed test result.</div></div>
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Resume</div><div class="form-section-line"></div></div>
-        <div class="field-group"><label>Upload a PDF copy of your resume <span class="req">*</span></label><div class="file-upload-wrap"><input type="file" class="file-upload-input" id="resume_file" name="resume_file" accept=".pdf,.doc,.docx" onchange="handleFileChange(this,'resume_box','resume_name')"/><div class="file-upload-box" id="resume_box"><div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="file-upload-label"><span>Click to upload</span> or drag & drop</div><div class="file-upload-sub">PDF, DOC, DOCX · Max 10 MB</div></div></div><div class="file-name-display" id="resume_name"></div><div class="file-note"><strong>📌 Reminder:</strong> Please make sure your resume includes the <strong>job title and description</strong> of the position you're applying for.</div><div class="field-error" id="err-resume_file">Please upload your resume.</div></div>
+        <div class="field-group"><label>Upload a PDF copy of your resume <span class="req">*</span></label><div class="file-upload-wrap"><input type="file" class="file-upload-input" id="resume_file" name="resume_file" accept=".pdf,.doc,.docx" onchange="handleFileChange(this,'resume_box','resume_name')"/><div class="file-upload-box" id="resume_box"><div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="file-upload-label"><span>Click to upload</span> or drag & drop</div><div class="file-upload-sub">PDF, DOC, DOCX · Max 2 MB</div></div></div><div class="file-name-display" id="resume_name"></div><div class="file-note"><strong>📌 Reminder:</strong> Please make sure your resume includes the <strong>job title and description</strong> of the position you're applying for.</div><div class="field-error" id="err-resume_file">Please upload your resume.</div></div>
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">Valid Government ID</div><div class="form-section-line"></div></div>
         <div class="field-group"><label for="gov_id_type">Choose a valid Government ID to upload <span class="req">*</span></label><select id="gov_id_type" name="gov_id_type"><option value="">Select ID type</option><option>Driver's License</option><option>NBI Clearance</option><option>PhilHealth ID</option><option>Philippine Identification System ID (PhilSys / National ID)</option><option>Philippine Passport</option><option>Postal ID</option><option>Professional Regulation Commission (PRC) ID</option><option>SSS/GSIS or UMID</option><option>Voter's ID or Voter's Certification (COMELEC)</option></select><div class="field-error" id="err-gov_id_type">Please select an ID type.</div></div>
-        <div class="field-group"><label>Upload a clear photo of your valid ID <span class="req">*</span></label><div class="file-upload-wrap"><input type="file" class="file-upload-input" id="gov_id_file" name="gov_id_file" accept="image/*,.pdf" onchange="handleFileChange(this,'gov_id_box','gov_id_name')"/><div class="file-upload-box" id="gov_id_box"><div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><div class="file-upload-label"><span>Click to upload</span> or drag & drop</div><div class="file-upload-sub">PNG, JPG, PDF · All 4 corners must be visible</div></div></div><div class="file-name-display" id="gov_id_name"></div><div class="field-error" id="err-gov_id_file">Please upload your government ID.</div></div>
+        <div class="field-group"><label>Upload a clear photo of your valid ID <span class="req">*</span></label><div class="file-upload-wrap"><input type="file" class="file-upload-input" id="gov_id_file" name="gov_id_file" accept="image/*,.pdf" onchange="handleFileChange(this,'gov_id_box','gov_id_name')"/><div class="file-upload-box" id="gov_id_box"><div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><div class="file-upload-label"><span>Click to upload</span> or drag & drop</div><div class="file-upload-sub">PNG, JPG, PDF · Max 1 MB · All 4 corners must be visible</div></div></div><div class="file-name-display" id="gov_id_name"></div><div class="field-error" id="err-gov_id_file">Please upload your government ID.</div></div>
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">DISC Assessment</div><div class="form-section-line"></div></div>
-        <div class="field-group"><label>Take the Tony Robbins DISC Assessment and upload result <span class="req">*</span></label><p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Take the free test at <a href="https://www.tonyrobbins.com/disc/" target="_blank" rel="noopener" style="color:var(--brand-accent);font-weight:600;">tonyrobbins.com/disc</a> before uploading.</p><div class="file-upload-wrap"><input type="file" class="file-upload-input" id="disc_file" name="disc_file" accept="image/*,.pdf" onchange="handleFileChange(this,'disc_box','disc_name')"/><div class="file-upload-box" id="disc_box"><div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="file-upload-label"><span>Click to upload</span> your DISC result</div><div class="file-upload-sub">PNG, JPG, PDF accepted</div></div></div><div class="file-name-display" id="disc_name"></div><div class="field-error" id="err-disc_file">Please upload your DISC assessment result.</div></div>
+        <div class="field-group"><label>Take the Tony Robbins DISC Assessment and upload result <span class="req">*</span></label><p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Take the free test at <a href="https://www.tonyrobbins.com/disc/" target="_blank" rel="noopener" style="color:var(--brand-accent);font-weight:600;">tonyrobbins.com/disc</a> before uploading.</p><div class="file-upload-wrap"><input type="file" class="file-upload-input" id="disc_file" name="disc_file" accept="image/*,.pdf" onchange="handleFileChange(this,'disc_box','disc_name')"/><div class="file-upload-box" id="disc_box"><div class="file-upload-icon"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="file-upload-label"><span>Click to upload</span> your DISC result</div><div class="file-upload-sub">PNG, JPG, PDF · Max 500 KB · Screenshot of your results page</div></div></div><div class="file-name-display" id="disc_name"></div><div class="field-error" id="err-disc_file">Please upload your DISC assessment result.</div></div>
         <div class="field-group"><label for="disc_style">What is your DISC Style? <span class="req">*</span></label><input type="text" id="disc_style" name="disc_style" placeholder="e.g. D — Dominance, I — Influence, S — Steadiness, C — Conscientiousness"/><div class="field-error" id="err-disc_style">This field is required.</div></div>
       </div>
       <div class="form-nav"><button class="btn btn-outline" onclick="prevStep(3)"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg> Back</button><button class="btn btn-primary" onclick="nextStep(3)">Review Application <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button></div>
@@ -658,11 +658,6 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 <div class="toast" id="toast"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span id="toast-msg"></span></div>
 <script>
 const SUBMIT_ENDPOINT = '/.netlify/functions/submit';
-// ZAPIER_DIRECT: file uploads go straight to Zapier to bypass Netlify's 6MB function limit.
-// This URL is visible in client-side code but that is intentional and acceptable —
-// the Zapier Filter step (checking X-Child-Key on the text submission) is what
-// prevents spam. File-only submissions without a matching text submission are harmless.
-const ZAPIER_DIRECT    = 'https://hooks.zapier.com/hooks/catch/6468901/42twqtt/';
 const TOTAL_STEPS = 4;
 
 // ── sendHeight — defined here first so ALL code below can safely call it ──────
@@ -940,18 +935,63 @@ function selectRadio(label, groupName) {
   label.classList.add('selected');
   label.querySelector('input').checked = true;
 }
+// File size limits in bytes
+const FILE_SIZE_LIMITS = {
+  resume_file:       2 * 1024 * 1024,   // 2 MB
+  gov_id_file:       1 * 1024 * 1024,   // 1 MB
+  disc_file:         500 * 1024,         // 500 KB
+  device_specs_file: 500 * 1024,         // 500 KB
+  speed_test_file:   500 * 1024,         // 500 KB
+};
+
+const FILE_SIZE_LABELS = {
+  resume_file:       '2 MB',
+  gov_id_file:       '1 MB',
+  disc_file:         '500 KB',
+  device_specs_file: '500 KB',
+  speed_test_file:   '500 KB',
+};
+
 function handleFileChange(input, boxId, nameId) {
-  const box = document.getElementById(boxId);
+  const box    = document.getElementById(boxId);
   const nameEl = document.getElementById(nameId);
-  if (input.files && input.files[0]) {
-    const file = input.files[0];
-    box.classList.add('has-file');
-    nameEl.textContent = '✓ ' + file.name + ' (' + (file.size/1024/1024).toFixed(2) + ' MB)';
-    nameEl.classList.add('show');
-    const err = document.getElementById('err-' + input.id);
-    if (err) err.classList.remove('show');
+  const errEl  = document.getElementById('err-' + input.id);
+
+  if (!input.files || !input.files[0]) return;
+
+  const file      = input.files[0];
+  const limitBytes = FILE_SIZE_LIMITS[input.id];
+  const limitLabel = FILE_SIZE_LABELS[input.id];
+  const sizeMB     = (file.size / 1024 / 1024).toFixed(2);
+
+  // ── File too large ──────────────────────────────────────────────────────────
+  if (limitBytes && file.size > limitBytes) {
+    box.classList.remove('has-file');
+    box.classList.add('dragover'); // red-ish highlight
+    nameEl.textContent = '';
+    nameEl.classList.remove('show');
+    if (errEl) {
+      errEl.textContent = `File too large (${sizeMB} MB). Maximum allowed is ${limitLabel}. Please compress or resize before uploading.`;
+      errEl.classList.add('show');
+    }
+    // Clear the input so they must re-select
+    input.value = '';
+    setTimeout(() => box.classList.remove('dragover'), 1500);
+    showToast(`File exceeds ${limitLabel} limit — please upload a smaller file.`, true);
     sendHeight();
+    return;
   }
+
+  // ── File OK ─────────────────────────────────────────────────────────────────
+  box.classList.add('has-file');
+  box.classList.remove('dragover');
+  nameEl.textContent = '✓ ' + file.name + ' (' + sizeMB + ' MB)';
+  nameEl.classList.add('show');
+  if (errEl) {
+    errEl.textContent = '';
+    errEl.classList.remove('show');
+  }
+  sendHeight();
 }
 document.querySelectorAll('.file-upload-box').forEach(box => {
   box.addEventListener('dragover', e => { e.preventDefault(); box.classList.add('dragover'); });
@@ -1062,14 +1102,33 @@ function radioVal(name) { const el = document.querySelector(`input[name="${name}
 // ── SUBMISSION ────────────────────────────────────────────────────────────────
 async function submitApplication() {
   if (!validateStep(4)) return;
+
+  // Double-check no oversized files slipped through
+  const fileLimits = {
+    resume_file:       2 * 1024 * 1024,
+    gov_id_file:       1 * 1024 * 1024,
+    disc_file:         500 * 1024,
+    device_specs_file: 500 * 1024,
+    speed_test_file:   500 * 1024,
+  };
+  for (const [fieldId, limit] of Object.entries(fileLimits)) {
+    const inp = document.getElementById(fieldId);
+    if (inp && inp.files && inp.files[0] && inp.files[0].size > limit) {
+      showToast('One or more files exceed the size limit. Please re-upload.', true);
+      return;
+    }
+  }
+
   const btn = document.getElementById('submit-btn');
   btn.classList.add('btn-loading'); btn.disabled = true;
-  try {
 
-    // ── STEP A: Send text fields as JSON through the secure Netlify proxy ──────
-    // The proxy keeps the Zapier webhook URL hidden server-side.
-    // We avoid sending files here because Netlify Functions have a 6MB body limit.
-    const textPayload = {
+  try {
+    // Single multipart POST — text fields + files together through the Netlify proxy.
+    // File size caps (2MB+1MB+500KB+500KB+500KB = 4.5MB max) keep us safely
+    // under Netlify's 6MB function body limit.
+    const formData = new FormData();
+
+    const textFields = {
       // Pre-form
       contract_type:            selectedContract === 'IC' ? 'Independent Contractor' : 'BPO Agent',
       position:                 selectedPosition || '',
@@ -1110,63 +1169,23 @@ async function submitApplication() {
       terms_agreed:             document.getElementById('terms_agreed').checked ? 'I Agree' : 'No',
       submitted_at:             new Date().toISOString(),
       source:                   'Sphere Rocket VA — General Application',
-      submission_type:          'text_fields',
-
-      // ╔══════════════════════════════════════════════════════════════╗
-      // ║  FUTURE IMPLEMENTATION — IC / BPO specific fields           ║
-      // ║  Uncomment once legal review is complete                    ║
-      // ╚══════════════════════════════════════════════════════════════╝
-      // ic_rate_per_hour:         '',
-      // ic_contract_signed:       '',
-      // ic_preferred_schedule:    '',
-      // bpo_team_name:            '',
-      // bpo_shift_preference:     '',
-      // bpo_equipment_provided:   '',
-      // bpo_nda_signed:           '',
+      // ── FUTURE: IC / BPO specific fields (uncomment after legal review) ──
+      // ic_rate_per_hour: '', ic_contract_signed: '', ic_preferred_schedule: '',
+      // bpo_team_name: '', bpo_shift_preference: '', bpo_equipment_provided: '', bpo_nda_signed: '',
     };
 
-    const res = await fetch(SUBMIT_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(textPayload),
+    Object.entries(textFields).forEach(([k, v]) => formData.append(k, v));
+
+    // Attach files
+    ['resume_file','gov_id_file','disc_file','device_specs_file','speed_test_file'].forEach(fieldId => {
+      const inp = document.getElementById(fieldId);
+      if (inp && inp.files && inp.files[0]) formData.append(fieldId, inp.files[0], inp.files[0].name);
     });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(errText || 'Submission failed');
-    }
+    const res = await fetch(SUBMIT_ENDPOINT, { method: 'POST', body: formData });
+    if (!res.ok) throw new Error(await res.text() || 'Submission failed');
 
-    // ── STEP B: Send file uploads directly to Zapier (no-cors) ────────────────
-    // Files bypass the Netlify function entirely to avoid the 6MB size limit.
-    // Zapier's Catch Hook accepts multipart directly from the browser.
-    // Because this is no-cors we can't read the response, but Zapier still
-    // receives and processes the files — they appear as separate Zap trigger data.
-    const fileIds = ['resume_file','gov_id_file','disc_file','device_specs_file','speed_test_file'];
-    const hasFiles = fileIds.some(id => {
-      const inp = document.getElementById(id);
-      return inp && inp.files && inp.files.length > 0;
-    });
-
-    if (hasFiles) {
-      const fileData = new FormData();
-      // Include email + submitted_at so Zapier can correlate this with the text submission
-      fileData.append('email',        textPayload.email);
-      fileData.append('full_name',    textPayload.full_name);
-      fileData.append('submitted_at', textPayload.submitted_at);
-      fileData.append('submission_type', 'file_uploads');
-      fileIds.forEach(fieldId => {
-        const inp = document.getElementById(fieldId);
-        if (inp && inp.files && inp.files[0]) {
-          fileData.append(fieldId, inp.files[0], inp.files[0].name);
-        }
-      });
-      // Fire and forget — no-cors means we can't read the response
-      // but Zapier receives it. We don't await this to avoid blocking the UX.
-      fetch(ZAPIER_DIRECT, { method: 'POST', mode: 'no-cors', body: fileData })
-        .catch(e => console.warn('File upload to Zapier failed silently:', e.message));
-    }
-
-    // ── Success ────────────────────────────────────────────────────────────────
+    // Success
     document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
     document.getElementById('success-state').classList.add('show');
     document.querySelector('.progress-card').style.opacity = '0.4';
@@ -1174,6 +1193,7 @@ async function submitApplication() {
     document.getElementById('ref-id').textContent = Math.random().toString(36).substr(2,8).toUpperCase();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     sendHeight();
+
   } catch (err) {
     console.error(err);
     showToast('Something went wrong. Please try again.', true);
