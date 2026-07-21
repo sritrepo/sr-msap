@@ -441,12 +441,23 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
           <label for="referral_source">How did you hear about Sphere Rocket VA? <span class="req">*</span></label>
           <select id="referral_source" name="referral_source">
             <option value="">Select one</option>
-            <option>Behance</option><option>Facebook Ads</option><option>Flexjobs</option>
-            <option>Glassdoor</option><option>Indeed</option><option>Instagram</option>
-            <option>Jobstars</option><option>Jora</option><option>LinkedIn</option>
-            <option>OnlineJobs.ph</option><option>School Job Fair</option>
-            <option>Sphere Rocket Team Members</option><option>Family and Friends</option>
-            <option>TikTok</option><option>YouTube</option><option>Webinar</option><option>TikTok Live</option>
+            <option>Facebook Ads</option>
+            <option>Instagram</option>
+            <option>TikTok</option>
+            <option>TikTok Live</option>
+            <option>YouTube</option>
+            <option>LinkedIn</option>
+            <option>Behance</option>
+            <option>Indeed</option>
+            <option>OnlineJobs.ph</option>
+            <option>Glassdoor</option>
+            <option>Jora</option>
+            <option>Flexjobs</option>
+            <option>Jobstars</option>
+            <option>Sphere Rocket Team Members</option>
+            <option>Family and Friends</option>
+            <option>Webinar</option>
+            <option>School Job Fair</option>
           </select>
           <div class="field-error" id="err-referral_source">Please select an option.</div>
         </div>
@@ -660,13 +671,21 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 const SUBMIT_ENDPOINT = '/.netlify/functions/submit';
 const TOTAL_STEPS = 4;
 
-// ── sendHeight — defined here first so ALL code below can safely call it ──────
-// The postMessage iframe resize listener lives in the second <script> block but
-// we expose the function on window early so nothing crashes during init.
+// ── sendHeight — debounced postMessage to Webflow parent iframe ──────────────
+// Defined early so all code below can call it safely.
+// Uses a debounce + change-detection to prevent the runaway height growth bug
+// that occurs when ResizeObserver and click listeners both fire simultaneously.
+var _lastSentH   = 0;
+var _sendTimer   = null;
 function sendHeight() {
-  var h = document.body.scrollHeight;
-  if (window.parent && window.parent !== window)
+  clearTimeout(_sendTimer);
+  _sendTimer = setTimeout(function() {
+    if (!window.parent || window.parent === window) return;
+    var h = document.documentElement.scrollHeight;
+    if (h === _lastSentH) return;   // unchanged — skip
+    _lastSentH = h;
     window.parent.postMessage({ type: 'sr-resize', height: h }, '*');
+  }, 120);
 }
 
 // ── POSITIONS DATA ────────────────────────────────────────────────────────────
@@ -1217,18 +1236,20 @@ buildPositionList('');
 showScreen('screen-1');
 </script>
 
-<!-- IFRAME RESIZE — ResizeObserver keeps iframe height in sync with Webflow parent -->
+<!-- IFRAME RESIZE — observers setup
+     sendHeight is debounced in the main script block above.
+     ResizeObserver fires only when document size actually changes.
+     No setInterval — eliminates the runaway height growth bug. -->
 <script>
 (function () {
-  // sendHeight is already defined in the main script block above.
-  // This block just sets up the persistent observers.
-  window.addEventListener('load', sendHeight);
+  // Fire once after full load
+  window.addEventListener('load', function () { setTimeout(sendHeight, 250); });
+
+  // ResizeObserver — fires only on genuine size changes, debounce handles bursts
   if (window.ResizeObserver) {
-    new ResizeObserver(sendHeight).observe(document.body);
-  } else {
-    setInterval(sendHeight, 300);
+    new ResizeObserver(sendHeight).observe(document.documentElement);
   }
-  document.addEventListener('click', function() { setTimeout(sendHeight, 350); });
+  // No setInterval fallback — it was the cause of the repeated height increments
 })();
 </script>
 </body>
