@@ -534,7 +534,16 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
         <div class="field-group"><label>Do you have Virtual Assistant experience? <span class="req">*</span></label><div class="radio-group inline" id="has_va_experience"><label class="radio-option" onclick="selectRadio(this,'has_va_experience')"><input type="radio" name="has_va_experience" value="Yes"/> <span>Yes</span></label><label class="radio-option" onclick="selectRadio(this,'has_va_experience')"><input type="radio" name="has_va_experience" value="No"/> <span>No</span></label></div><div class="field-error" id="err-has_va_experience">Please select an option.</div></div>
         <div class="field-group"><label for="previous_client_industry">What was the business industry of your previous client? <span class="req">*</span></label><input type="text" id="previous_client_industry" name="previous_client_industry" placeholder="e.g. Real Estate, E-commerce, Healthcare"/><div class="field-error" id="err-previous_client_industry">This field is required.</div></div>
         <div class="field-group"><label>Have you had clients from Sphere Rocket before? <span class="req">*</span></label><div class="radio-group inline" id="previous_sr_client"><label class="radio-option" onclick="selectRadio(this,'previous_sr_client')"><input type="radio" name="previous_sr_client" value="Yes"/> <span>Yes</span></label><label class="radio-option" onclick="selectRadio(this,'previous_sr_client')"><input type="radio" name="previous_sr_client" value="No"/> <span>No</span></label></div><div class="field-error" id="err-previous_sr_client">Please select an option.</div></div>
-        <div class="field-group" id="sr_client_details_wrap" style="display:none"><label for="sr_client_details">If yes, provide the client name and your last day with them. Put "N/A" if not applicable. <span class="hint">(optional)</span></label><textarea id="sr_client_details" name="sr_client_details" rows="2" placeholder='e.g. "John Smith Real Estate — Last day: March 15, 2024" or "N/A"'></textarea></div>
+        <div class="field-group">
+          <label for="sr_client_name" id="sr_client_name_label">SR Client Name <span class="hint" id="sr_client_name_hint">(optional — fill in if you answered Yes above)</span></label>
+          <input type="text" id="sr_client_name" name="sr_client_name" placeholder="e.g. John Smith Real Estate"/>
+          <div class="field-error" id="err-sr_client_name">Please provide the client name.</div>
+        </div>
+        <div class="field-group">
+          <label for="sr_client_last_day" id="sr_client_last_day_label">Last Day with SR Client <span class="hint" id="sr_client_last_day_hint">(optional — fill in if you answered Yes above)</span></label>
+          <input type="text" id="sr_client_last_day" name="sr_client_last_day" placeholder='e.g. March 15, 2024 — or "Still Active" or "N/A"'/>
+          <div class="field-error" id="err-sr_client_last_day">Please provide your last day with the client.</div>
+        </div>
 
         <div class="form-section-head"><div class="form-section-line"></div><div class="form-section-label">VA Training</div><div class="form-section-line"></div></div>
         <div class="field-group">
@@ -1038,6 +1047,20 @@ function validateStep(step) {
     if (!iv) { if (err) err.classList.add('show'); valid = false; }
     else { if (err) err.classList.remove('show'); }
   }
+  // SR client name + last day become required if previous_sr_client = Yes
+  if (step === 2) {
+    const srAnswer = document.querySelector('input[name="previous_sr_client"]:checked');
+    if (srAnswer && srAnswer.value === 'Yes') {
+      ['sr_client_name','sr_client_last_day'].forEach(function(f) {
+        const el  = document.getElementById(f);
+        const err = document.getElementById('err-' + f);
+        const ok  = el && el.value.trim() !== '';
+        if (err) err.classList.toggle('show', !ok);
+        if (el)  el.classList.toggle('error', !ok);
+        if (!ok) valid = false;
+      });
+    }
+  }
   if (!valid) showToast('Please fill in all required fields.', true);
   return valid;
 }
@@ -1123,12 +1146,34 @@ document.getElementById('referral_source').addEventListener('change', function()
   sendHeight();
 });
 
-// Show sr_client_details when previous_sr_client = Yes
-// Show va_training_details when va_training starts with Yes
+
+// SR client label toggle — fields always visible, become required when Yes selected
+// va_training_details — shown only when va_training starts with Yes
 document.addEventListener('change', function(e) {
   if (e.target && e.target.name === 'previous_sr_client') {
-    var wrap = document.getElementById('sr_client_details_wrap');
-    if (wrap) wrap.style.display = e.target.value === 'Yes' ? 'block' : 'none';
+    var isYes       = e.target.value === 'Yes';
+    var nameHint    = document.getElementById('sr_client_name_hint');
+    var lastDayHint = document.getElementById('sr_client_last_day_hint');
+    var nameLabel   = document.getElementById('sr_client_name_label');
+    var lastDayLabel= document.getElementById('sr_client_last_day_label');
+    // Toggle hint visibility
+    if (nameHint)    nameHint.style.display    = isYes ? 'none' : 'inline';
+    if (lastDayHint) lastDayHint.style.display  = isYes ? 'none' : 'inline';
+    // Add/remove required asterisk dynamically
+    ['sr_client_name_label','sr_client_last_day_label'].forEach(function(lblId) {
+      var lbl = document.getElementById(lblId);
+      if (!lbl) return;
+      var existing = lbl.querySelector('.req-sr');
+      if (isYes && !existing) {
+        var req = document.createElement('span');
+        req.className = 'req req-sr';
+        req.style.marginLeft = '2px';
+        req.textContent = '*';
+        lbl.appendChild(req);
+      } else if (!isYes && existing) {
+        existing.remove();
+      }
+    });
     sendHeight();
   }
   if (e.target && e.target.name === 'va_training') {
@@ -1137,6 +1182,7 @@ document.addEventListener('change', function(e) {
     sendHeight();
   }
 });
+
 
 
 // ── TERMS MODAL ───────────────────────────────────────────────────────────────
@@ -1181,7 +1227,8 @@ function buildReviewSummary() {
     { title:'Background & Experience', rows:[
       ['College Degree', val('college_degree')],
       ['VA Experience', radioVal('has_va_experience')],['Previous Industry', val('previous_client_industry')],
-      ['Previous SR Client', radioVal('previous_sr_client')],['SR Client Details', val('sr_client_details') || 'N/A'],
+      ['Previous SR Client', radioVal('previous_sr_client')],['SR Client Name', val('sr_client_name') || 'N/A'],
+      ['SR Client Last Day', val('sr_client_last_day') || 'N/A'],
       ['VA Training', radioVal('va_training')],['Training Details', val('va_training_details') || 'N/A'],
       ['Tools Used', val('tools_used')],['Other Languages', val('other_languages')],
       ['Skills Summary', val('skills_summary')],
@@ -1260,7 +1307,8 @@ async function submitApplication() {
       has_va_experience:        radioVal('has_va_experience'),
       previous_client_industry: val('previous_client_industry'),
       previous_sr_client:       radioVal('previous_sr_client'),
-      sr_client_details:        val('sr_client_details'),
+      sr_client_name:           val('sr_client_name'),
+      sr_client_last_day:       val('sr_client_last_day'),
       va_training:              radioVal('va_training'),
       va_training_details:      val('va_training_details'),
       tools_used:               val('tools_used'),
