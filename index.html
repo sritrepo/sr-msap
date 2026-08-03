@@ -360,6 +360,32 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
       <div class="contract-card-tag">Structured / Team-based</div>
     </div>
   </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       BOTH OPTION — PENDING LEGAL REVIEW
+       To enable: remove the opening HTML comment below (the line that starts
+       with <!-- BOTH-HIDDEN) and the closing comment (BOTH-HIDDEN -->)
+       The two-card grid above is unaffected whether this is shown or hidden.
+       ═══════════════════════════════════════════════════════════════════════ -->
+
+  <!-- BOTH-HIDDEN
+  <div style="display:flex; justify-content:center; margin-top:-4px; margin-bottom:0;">
+    <div class="contract-card" id="card-both" onclick="selectContract('BOTH')"
+         style="max-width:320px; width:100%;">
+      <div class="contract-card-check"><svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="contract-card-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.3 3.1-6 7-6"/>
+          <circle cx="15" cy="8" r="3"/><path d="M22 20c0-3.3-3.1-6-7-6"/>
+          <path d="M11 20c0-3.3 1.3-6 4-6s4 2.7 4 6" opacity=".4"/>
+        </svg>
+      </div>
+      <div class="contract-card-title">Both</div>
+      <div class="contract-card-desc">Open to working as either an Independent Contractor or BPO Agent depending on the client match and opportunity.</div>
+      <div class="contract-card-tag">Flexible / Open to Either</div>
+    </div>
+  </div>
+  BOTH-HIDDEN -->
   <p class="not-sure-note">Not sure which one fits you? <a href="#" target="_blank" rel="noopener">Learn more about the difference here</a> — you can always reach out to us for guidance.</p>
   <div class="err-contract" id="err-contract">Please select a contract type to continue.</div>
   <div class="screen-nav screen-nav-center">
@@ -721,40 +747,47 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 const SUBMIT_ENDPOINT = '/.netlify/functions/submit';
 const TOTAL_STEPS = 4;
 
-// ── sendHeight — debounced postMessage to Webflow parent iframe ──────────────
-// Defined early so all code below can call it safely.
-// Uses a debounce + change-detection to prevent the runaway height growth bug
-// that occurs when ResizeObserver and click listeners both fire simultaneously.
-var _lastSentH   = 0;
-var _sendTimer   = null;
+// ── Height messaging to Webflow parent iframe ────────────────────────────────
+// sendHeight()        — measures current page height and posts to parent
+// notifyStepChange()  — called on every step/screen transition; tells the
+//                       parent to (a) scroll to top and (b) accept a new height
+//
+// Key insight: we must measure height AFTER the new step is visible and the
+// leaving step is gone. If we measure while both are in the DOM (during the
+// fade-out animation) we get the OLD tall height, which is why the iframe
+// never shrinks. So notifyStepChange posts the reset immediately, then waits
+// for the animation to finish before measuring the real new height.
+
+var _lastSentH = 0;
+var _sendTimer = null;
+
 function sendHeight() {
   clearTimeout(_sendTimer);
   _sendTimer = setTimeout(function() {
     if (!window.parent || window.parent === window) return;
     var h = document.documentElement.scrollHeight;
-    if (h === _lastSentH) return;   // unchanged — skip
+    if (h === _lastSentH) return;
     _lastSentH = h;
-    // Send a reset-to-0 first so the parent iframe can shrink,
-    // then send the real height in the next frame.
-    // Without the reset the parent div never gets smaller.
-    window.parent.postMessage({ type: 'sr-resize', height: 0 }, '*');
-    requestAnimationFrame(function() {
-      window.parent.postMessage({ type: 'sr-resize', height: h }, '*');
-    });
-  }, 120);
+    window.parent.postMessage({ type: 'sr-resize', height: h }, '*');
+  }, 80);
 }
 
-// Called by step navigation — tells parent to scroll to top of iframe
-// AND resets height so shorter steps don't leave a blank gap
 function notifyStepChange() {
   if (!window.parent || window.parent === window) return;
-  // Ask parent to scroll to top of the iframe element
+  // 1. Tell parent to scroll to top of iframe
   window.parent.postMessage({ type: 'sr-scroll-top' }, '*');
-  // Reset height immediately so parent shrinks before new height is measured
-  _lastSentH = 0;
+  // 2. Send reset signal — parent fades iframe out and collapses height
   window.parent.postMessage({ type: 'sr-resize', height: 0 }, '*');
-  // Then send the real new height after the DOM has settled
-  setTimeout(sendHeight, 200);
+  _lastSentH = 0;
+  // 3. Wait for fade-out animation (250ms) + layout settle (100ms),
+  //    THEN measure and send real height. By this point the leaving step
+  //    is gone from the DOM and the new shorter step is fully rendered.
+  setTimeout(function() {
+    if (!window.parent || window.parent === window) return;
+    var h = document.documentElement.scrollHeight;
+    _lastSentH = h;
+    window.parent.postMessage({ type: 'sr-resize', height: h }, '*');
+  }, 350);
 }
 
 // ── POSITIONS DATA ────────────────────────────────────────────────────────────
@@ -812,6 +845,9 @@ function selectContract(type) {
   selectedContract = type;
   document.getElementById('card-ic').classList.toggle('selected', type === 'IC');
   document.getElementById('card-bpo').classList.toggle('selected', type === 'BPO');
+  // card-both only exists when the BOTH option is uncommented — guard with ?
+  var bothCard = document.getElementById('card-both');
+  if (bothCard) bothCard.classList.toggle('selected', type === 'BOTH');
   document.getElementById('err-contract').classList.remove('show');
 }
 
@@ -954,6 +990,13 @@ function showScreen(id) {
     }
   };
 
+  // Tell parent: scroll to top + start fade transition immediately
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'sr-scroll-top' }, '*');
+    window.parent.postMessage({ type: 'sr-resize', height: 0 }, '*');
+    _lastSentH = 0;
+  }
+
   if (current && current !== next) {
     current.classList.add('leaving');
     current.addEventListener('animationend', function onOut() {
@@ -961,10 +1004,23 @@ function showScreen(id) {
       current.classList.remove('active', 'leaving');
       next.classList.add('active');
       afterShow();
+      // Send real height after leaving screen is gone from DOM
+      setTimeout(function() {
+        if (!window.parent || window.parent === window) return;
+        var h = document.documentElement.scrollHeight;
+        _lastSentH = h;
+        window.parent.postMessage({ type: 'sr-resize', height: h }, '*');
+      }, 80);
     }, { once: true });
   } else {
     next.classList.add('active');
     afterShow();
+    setTimeout(function() {
+      if (!window.parent || window.parent === window) return;
+      var h = document.documentElement.scrollHeight;
+      _lastSentH = h;
+      window.parent.postMessage({ type: 'sr-resize', height: h }, '*');
+    }, 80);
   }
 }
 
@@ -977,22 +1033,39 @@ function showStep(n) {
   document.getElementById('step-counter').textContent = `Step ${n} of ${TOTAL_STEPS}`;
   updateStepper(n);
 
+  // Scroll iframe to top immediately (for standalone use)
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Tell parent: scroll to top + start fade-out transition NOW,
+  // before animation begins so the parent fade is in sync
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'sr-scroll-top' }, '*');
+    window.parent.postMessage({ type: 'sr-resize', height: 0 }, '*');
+    _lastSentH = 0;
+  }
+
   if (current && current !== next) {
-    // Fade out current step
     current.classList.add('leaving');
     current.addEventListener('animationend', function onOut() {
       current.removeEventListener('animationend', onOut);
       current.classList.remove('active', 'leaving');
-      // Fade in next step
       next.classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      notifyStepChange();
+      // Measure and send real height NOW — leaving step is gone from DOM
+      setTimeout(function() {
+        if (!window.parent || window.parent === window) return;
+        var h = document.documentElement.scrollHeight;
+        _lastSentH = h;
+        window.parent.postMessage({ type: 'sr-resize', height: h }, '*');
+      }, 80);
     }, { once: true });
   } else {
-    // No current step (first load)
     next.classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    notifyStepChange();
+    setTimeout(function() {
+      if (!window.parent || window.parent === window) return;
+      var h = document.documentElement.scrollHeight;
+      _lastSentH = h;
+      window.parent.postMessage({ type: 'sr-resize', height: h }, '*');
+    }, 80);
   }
 }
 function updateStepper(n) {
@@ -1215,7 +1288,7 @@ function buildReviewSummary() {
   const fileInfo = id => { const i = document.getElementById(id); return (i && i.files && i.files[0]) ? i.files[0].name : '—'; };
   const sections = [
     { title:'Application', rows:[
-      ['Contract Type', selectedContract === 'IC' ? 'Independent Contractor' : selectedContract === 'BPO' ? 'BPO Agent' : '—'],
+      ['Contract Type', selectedContract === 'IC' ? 'Independent Contractor' : selectedContract === 'BPO' ? 'BPO Agent' : selectedContract === 'BOTH' ? 'Both (IC & BPO)' : '—'],
       ['Applying For', selectedPosition || '—'],
     ]},
     { title:'Personal Information', rows:[
@@ -1290,7 +1363,10 @@ async function submitApplication() {
 
     const textFields = {
       // Pre-form
-      contract_type:            selectedContract === 'IC' ? 'Independent Contractor' : 'BPO Agent',
+      contract_type:            selectedContract === 'IC' ? 'Independent Contractor'
+                              : selectedContract === 'BPO' ? 'BPO Agent'
+                              : selectedContract === 'BOTH' ? 'Both (IC & BPO)'
+                              : '',
       position:                 selectedPosition || '',
       // Step 1
       full_name:                val('full_name'),
