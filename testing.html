@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SR Embed Test Harness</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --purple: #591DA9; --purple-lite: #F0E8FF;
+  --dark: #0A1628; --navy: #1E3A5F;
+  --border: #E2E8F0; --surface: #fff;
+  --muted: #94A3B8; --success: #16A34A;
+  --error: #DC2626; --text: #0F172A;
+}
+body { font-family:'Inter',sans-serif; background:#F1F5F9; color:var(--text); min-height:100vh; }
+
+/* Fake nav */
+.fake-nav {
+  position:sticky; top:0; z-index:100; background:var(--dark); height:64px;
+  display:flex; align-items:center; padding:0 24px; justify-content:space-between;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+.fake-nav-logo { font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:16px; color:#fff; }
+.fake-nav-logo span { color:var(--purple); }
+.fake-nav-links { display:flex; gap:20px; }
+.fake-nav-links a { font-size:13px; color:rgba(255,255,255,0.6); text-decoration:none; font-weight:500; }
+
+/* Fake hero */
+.fake-hero { background:linear-gradient(135deg,var(--navy) 0%,var(--dark) 100%); padding:60px 24px; text-align:center; }
+.fake-hero h1 { font-family:'Plus Jakarta Sans',sans-serif; font-size:36px; font-weight:800; color:#fff; margin-bottom:12px; }
+.fake-hero p { font-size:15px; color:rgba(255,255,255,0.6); max-width:500px; margin:0 auto; }
+
+/* Layout */
+.page-container { max-width:900px; margin:0 auto; padding:40px 20px 120px; }
+.section-label { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; margin-top:32px; }
+
+/* Controls */
+.controls { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 24px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+.controls-title { font-family:'Plus Jakarta Sans',sans-serif; font-size:14px; font-weight:700; color:var(--text); margin-bottom:14px; }
+.controls-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:8px; margin-bottom:14px; }
+.ctrl-btn { padding:8px 12px; font-size:12px; font-weight:600; font-family:'Inter',sans-serif; border-radius:8px; border:1.5px solid var(--border); background:var(--surface); color:var(--text); cursor:pointer; transition:all 0.15s; text-align:center; }
+.ctrl-btn:hover { border-color:var(--purple); color:var(--purple); background:var(--purple-lite); }
+.ctrl-btn.active { border-color:var(--purple); background:var(--purple); color:white; }
+.ctrl-btn.danger { border-color:var(--error); color:var(--error); }
+.ctrl-btn.danger:hover { background:var(--error); color:white; }
+.viewport-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px; }
+.viewport-label { font-size:12px; color:var(--muted); font-weight:500; min-width:80px; }
+.viewport-slider { flex:1; min-width:120px; accent-color:var(--purple); }
+.viewport-value { font-size:12px; font-weight:700; color:var(--purple); background:var(--purple-lite); padding:3px 10px; border-radius:20px; min-width:70px; text-align:center; }
+
+/* Status bar */
+.status-bar { display:flex; gap:12px; flex-wrap:wrap; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin-bottom:16px; }
+.status-pill { display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--muted); }
+.status-dot { width:8px; height:8px; border-radius:50%; background:var(--muted); transition:background 0.3s; }
+.status-dot.green { background:var(--success); }
+.status-dot.yellow { background:#F59E0B; }
+.status-dot.red { background:var(--error); }
+.status-val { color:var(--text); font-weight:700; }
+
+/* Log */
+.log-panel { background:var(--dark); border-radius:10px; padding:14px 16px; font-family:'Courier New',monospace; font-size:11px; max-height:200px; overflow-y:auto; margin-top:0; border:1px solid #1E3A5F; }
+.log-panel::-webkit-scrollbar { width:4px; }
+.log-panel::-webkit-scrollbar-thumb { background:#2D5F8A; border-radius:4px; }
+.log-line { margin-bottom:3px; line-height:1.5; }
+.log-time  { color:#94A3B8; }
+.log-type  { font-weight:700; padding:1px 6px; border-radius:4px; font-size:10px; margin:0 4px; }
+.log-resize  { background:#1E3A5F; color:#7DD3FC; }
+.log-scroll  { background:#14532D; color:#86EFAC; }
+.log-reset   { background:#7C2D12; color:#FCA5A5; }
+.log-info    { background:#312E81; color:#C4B5FD; }
+.log-fade    { background:#4A1D96; color:#DDD6FE; }
+.log-msg { color:#E2E8F0; }
+.log-empty { color:#475569; font-style:italic; }
+
+/* Embed section */
+.webflow-section { background:#F0E8FF; border-radius:12px; overflow:hidden; transition:width 0.3s ease; margin:0 auto; }
+.sr-embed-wrap { width:100%; max-width:100%; border:none; background:transparent; position:relative; }
+.sr-embed-frame { width:1px; min-width:100%; border:none; display:block; overflow:hidden; transition:opacity 0.2s ease; }
+
+/* Footer content */
+.fake-footer-content { margin-top:40px; padding:32px 24px; background:var(--surface); border:1px solid var(--border); border-radius:12px; text-align:center; }
+.fake-footer-content h3 { font-family:'Plus Jakarta Sans',sans-serif; font-size:18px; font-weight:700; color:var(--text); margin-bottom:8px; }
+.fake-footer-content p { font-size:13px; color:var(--muted); }
+</style>
+</head>
+<body>
+
+<nav class="fake-nav">
+  <div class="fake-nav-logo">Sphere Rocket <span>VA</span></div>
+  <div class="fake-nav-links">
+    <a href="#">Home</a><a href="#">About</a><a href="#">Careers</a><a href="#">Contact</a>
+  </div>
+</nav>
+
+<div class="fake-hero">
+  <h1>Join Our Team</h1>
+  <p>This page simulates the Webflow embed environment — sticky nav, hero, and content below the form — so you can test without touching Webflow.</p>
+</div>
+
+<div class="page-container">
+
+  <div class="section-label">🧪 Test Controls</div>
+  <div class="controls">
+    <div class="controls-title">Simulate Viewport</div>
+    <div class="controls-grid">
+      <button class="ctrl-btn" onclick="setWidth(375)">📱 iPhone SE (375px)</button>
+      <button class="ctrl-btn" onclick="setWidth(390)">📱 iPhone 14 (390px)</button>
+      <button class="ctrl-btn" onclick="setWidth(430)">📱 iPhone Pro Max (430px)</button>
+      <button class="ctrl-btn" onclick="setWidth(768)">📟 iPad (768px)</button>
+      <button class="ctrl-btn" onclick="setWidth(1024)">💻 iPad Pro (1024px)</button>
+      <button class="ctrl-btn active" id="btn-full" onclick="setWidth('100%')">🖥 Full Width</button>
+    </div>
+    <div class="viewport-row">
+      <span class="viewport-label">Custom:</span>
+      <input type="range" class="viewport-slider" min="320" max="1200" value="900"
+        oninput="setWidth(this.value+'px'); document.getElementById('vw-val').textContent=this.value+'px'"/>
+      <span class="viewport-value" id="vw-val">900px</span>
+    </div>
+    <div class="viewport-row" style="margin-top:14px;">
+      <button class="ctrl-btn danger" onclick="reloadFrame()">🔄 Reload iframe</button>
+      <button class="ctrl-btn" onclick="clearLog()">🗑 Clear log</button>
+      <button class="ctrl-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">⬆ Page top</button>
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  <div class="status-bar">
+    <div class="status-pill"><div class="status-dot" id="dot-msg"></div><span>Messages: </span><span class="status-val" id="stat-msg">0</span></div>
+    <div class="status-pill"><div class="status-dot" id="dot-h"></div><span>iframe height: </span><span class="status-val" id="stat-h">—</span></div>
+    <div class="status-pill"><div class="status-dot" id="dot-fade"></div><span>Fade state: </span><span class="status-val" id="stat-fade">idle</span></div>
+    <div class="status-pill"><span>Viewport: </span><span class="status-val" id="stat-vp">full width</span></div>
+  </div>
+
+  <!-- EMBED -->
+  <div class="section-label">📋 Embedded Form</div>
+  <div class="webflow-section" id="webflow-section">
+    <div class="sr-embed-wrap" id="sr-embed-wrap">
+      <iframe
+        id="sr-application-frame"
+        class="sr-embed-frame"
+        src="https://jovial-trifle-9a780d.netlify.app/"
+        title="Sphere Rocket VA — General Application Form"
+        loading="lazy"
+        allow="clipboard-write"
+        referrerpolicy="origin"
+        scrolling="no"
+      ></iframe>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div class="section-label">📡 postMessage Log</div>
+  <div class="log-panel" id="log-panel">
+    <div class="log-line log-empty">Waiting for messages from iframe...</div>
+  </div>
+
+  <div class="fake-footer-content">
+    <h3>Content Below the Form</h3>
+    <p>Scroll-to-top on step change should bring you back up to the top of the form, past this block.</p>
+  </div>
+
+</div>
+
+<script>
+// ── EMBED LOGIC (mirrors webflow-embed-code.html exactly) ────────────────────
+var frame  = document.getElementById('sr-application-frame');
+var wrap   = document.getElementById('sr-embed-wrap');
+var ORIGIN = 'https://jovial-trifle-9a780d.netlify.app';
+var rafId  = null;
+var isFading = false;
+var fadeInTimer = null;
+var msgCount = 0;
+
+function scrollToFrame() {
+  var el = wrap || frame;
+  if (!el) return;
+  var top = 0, node = el;
+  while (node) { top += node.offsetTop || 0; node = node.offsetParent; }
+  window.scrollTo({ top: Math.max(0, top - 80), behavior: 'smooth' });
+}
+
+// Mirrors webflow-embed-code.html exactly
+var stepChangeTimer = null;
+var isTransitioning = false;
+var queuedHeight    = null;
+
+function onStepChange() {
+  if (isTransitioning) return;
+  isTransitioning = true;
+  frame.style.opacity = '0';
+  updateFadeStatus('fading out...');
+  log('fade', 'sr-resize:0', 'Step change — fading out, will collapse to 1px');
+
+  stepChangeTimer = setTimeout(function() {
+    frame.style.height = '1px';
+    log('fade', 'collapse', 'Collapsed to 1px — forcing browser reflow');
+    updateFadeStatus('collapsed');
+    if (queuedHeight !== null) {
+      applyNewHeight(queuedHeight);
+      queuedHeight = null;
+    }
+  }, 230);
+}
+
+function applyNewHeight(h) {
+  frame.style.height = Math.ceil(h) + 'px';
+  updateHeight(h);
+  log('fade', 'reveal', 'Applying ' + Math.ceil(h) + 'px — fading back in');
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      frame.style.opacity = '1';
+      isTransitioning = false;
+      queuedHeight = null;
+      updateFadeStatus('idle');
+    });
+  });
+}
+
+function onMessage(e) {
+  if (e.origin !== ORIGIN) return;
+  if (!e.data) return;
+
+  msgCount++;
+  document.getElementById('stat-msg').textContent = msgCount;
+  document.getElementById('dot-msg').className = 'status-dot green';
+
+  if (e.data.type === 'sr-resize') {
+    var h = e.data.height;
+    if (typeof h !== 'number') return;
+
+    if (h === 0) {
+      queuedHeight = null;
+      onStepChange();
+      return;
+    }
+
+    if (isTransitioning) {
+      log('resize', 'queued', 'Height ' + Math.ceil(h) + 'px queued during transition');
+      queuedHeight = h;
+      if (frame.style.height === '1px') {
+        applyNewHeight(h);
+        queuedHeight = null;
+      }
+    } else {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(function() {
+        frame.style.height = Math.ceil(h) + 'px';
+        updateHeight(h);
+        log('resize', 'sr-resize', 'Height → ' + Math.ceil(h) + 'px');
+        rafId = null;
+      });
+    }
+    return;
+  }
+
+  if (e.data.type === 'sr-scroll-top') {
+    log('scroll', 'sr-scroll-top', 'Scrolling parent to top of embed');
+    scrollToFrame();
+  }
+}
+
+window.addEventListener('message', onMessage);
+
+// ── STATUS HELPERS ────────────────────────────────────────────────────────────
+function updateHeight(h) {
+  document.getElementById('stat-h').textContent = Math.ceil(h) + 'px';
+  document.getElementById('dot-h').className = 'status-dot ' + (h > 200 ? 'green' : 'yellow');
+}
+function updateFadeStatus(s) {
+  document.getElementById('stat-fade').textContent = s;
+  document.getElementById('dot-fade').className = 'status-dot ' + (s === 'idle' ? 'green' : s === 'fading out...' ? 'yellow' : 'green');
+}
+
+// ── LOG ───────────────────────────────────────────────────────────────────────
+var logEl = document.getElementById('log-panel');
+var logCount = 0;
+function log(type, label, msg) {
+  logCount++;
+  if (logCount === 1) logEl.innerHTML = '';
+  if (logEl.children.length > 150) logEl.removeChild(logEl.firstChild);
+  var now = new Date();
+  var t = now.toTimeString().slice(0,8) + '.' + String(now.getMilliseconds()).padStart(3,'0');
+  var d = document.createElement('div');
+  d.className = 'log-line';
+  d.innerHTML = '<span class="log-time">' + t + '</span>'
+    + '<span class="log-type log-' + type + '">' + label + '</span>'
+    + '<span class="log-msg">' + msg + '</span>';
+  logEl.appendChild(d);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+// ── CONTROLS ──────────────────────────────────────────────────────────────────
+function setWidth(w) {
+  var s = document.getElementById('webflow-section');
+  s.style.width = typeof w === 'number' ? w + 'px' : w;
+  document.getElementById('stat-vp').textContent = typeof w === 'number' ? w + 'px' : 'full width';
+  log('info', 'test', 'Viewport → ' + (typeof w === 'number' ? w + 'px' : 'full width'));
+}
+function reloadFrame() {
+  isFading = false; frame.style.opacity = '1';
+  frame.style.height = '700px';
+  frame.src = frame.src;
+  document.getElementById('stat-h').textContent = '—';
+  document.getElementById('stat-fade').textContent = 'idle';
+  log('info', 'reload', 'iframe reloaded');
+}
+function clearLog() {
+  logEl.innerHTML = '<div class="log-line log-empty">Log cleared.</div>';
+  logCount = 0;
+}
+
+log('info', 'init', 'Test harness ready — loading: ' + ORIGIN);
+</script>
+</body>
+</html>
