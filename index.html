@@ -1468,18 +1468,213 @@ function showToast(msg, isError = false) {
 //   3. (Optional) Add a matching entry to SLUG_META for a custom tab title.
 // That's it — no new HTML files needed.
 const SLUG_ROLE_MAP = {
-  'web-developer':        'Web Developer',
+  'ads-specialist': 'Ads Specialist',
+  'affiliate-marketer-va': 'Affiliate Marketer VA',
+  'agent-recruiter': 'Agent Recruiter',
+  'ai-automation-specialist': 'AI Automation Specialist',
+  'airbnb-virtual-assistant': 'Airbnb Virtual Assistant',
+  'chief-marketing-officer': 'Chief Marketing Officer',
+  'client-care': 'Client Care',
+  'client-success-manager': 'Client Success Manager',
+  'content-creator': 'Content Creator',
+  'content-writer': 'Content Writer',
+  'construction-estimator': 'Construction Estimator',
+  'crm-manager': 'CRM Manager',
+  'crm-specialist': 'CRM Specialist',
+  'customer-service-va': 'Customer Service VA',
+  'cyber-security-specialist': 'Cyber Security Specialist',
+  'data-analyst': 'Data Analyst',
+  'ecommerce-sourcing-specialist': 'Ecommerce Sourcing Specialist',
+  'ecommerce-shopify-va': 'Ecommerce/Shopify VA',
+  'financial-director': 'Financial Director',
+  'full-stack-web-developer': 'Full stack Web Developer',
+  'graphic-designer': 'Graphic Designer',
+  'hr-coordinator': 'HR Coordinator',
+  'investment-analyst': 'Investment Analyst',
+  'listing-coordinator': 'Listing Coordinator',
+  'media-buyer': 'Media Buyer',
+  'mortgage-assistant': 'Mortgage Assistant',
+  'multimedia-virtual-assistant': 'Multimedia Virtual Assistant',
+  'med-va': 'Med VA',
+  'procurement-administrative-assistant': 'Procurement Administrative Assistant',
+  'project-manager': 'Project Manager',
+  'property-manager': 'Property Manager',
+  'recruiter': 'Recruiter',
+  'reva': 'REVA',
   'social-media-manager': 'Social Media Manager',
+  'transaction-coordinator': 'Transaction Coordinator',
+  'video-editor': 'Video Editor',
+  'web-designer': 'Web Designer',
+  'web-developer': 'Web Developer',
+  'youtube-specialist': 'YouTube Specialist',
+  'operations-manager': 'Operations Manager',
+  'other': 'Other',
 };
 
 const SLUG_META = {
-  'web-developer': {
-    title: 'Apply — Web Developer | Sphere Rocket VA',
-    description: 'Apply now for the Web Developer role at Sphere Rocket VA.',
+  'ads-specialist': {
+    title: 'Apply — Ads Specialist | Sphere Rocket VA',
+    description: 'Apply now for the Ads Specialist role at Sphere Rocket VA.',
+  },
+  'affiliate-marketer-va': {
+    title: 'Apply — Affiliate Marketer VA | Sphere Rocket VA',
+    description: 'Apply now for the Affiliate Marketer VA role at Sphere Rocket VA.',
+  },
+  'agent-recruiter': {
+    title: 'Apply — Agent Recruiter | Sphere Rocket VA',
+    description: 'Apply now for the Agent Recruiter role at Sphere Rocket VA.',
+  },
+  'ai-automation-specialist': {
+    title: 'Apply — AI Automation Specialist | Sphere Rocket VA',
+    description: 'Apply now for the AI Automation Specialist role at Sphere Rocket VA.',
+  },
+  'airbnb-virtual-assistant': {
+    title: 'Apply — Airbnb Virtual Assistant | Sphere Rocket VA',
+    description: 'Apply now for the Airbnb Virtual Assistant role at Sphere Rocket VA.',
+  },
+  'chief-marketing-officer': {
+    title: 'Apply — Chief Marketing Officer | Sphere Rocket VA',
+    description: 'Apply now for the Chief Marketing Officer role at Sphere Rocket VA.',
+  },
+  'client-care': {
+    title: 'Apply — Client Care | Sphere Rocket VA',
+    description: 'Apply now for the Client Care role at Sphere Rocket VA.',
+  },
+  'client-success-manager': {
+    title: 'Apply — Client Success Manager | Sphere Rocket VA',
+    description: 'Apply now for the Client Success Manager role at Sphere Rocket VA.',
+  },
+  'content-creator': {
+    title: 'Apply — Content Creator | Sphere Rocket VA',
+    description: 'Apply now for the Content Creator role at Sphere Rocket VA.',
+  },
+  'content-writer': {
+    title: 'Apply — Content Writer | Sphere Rocket VA',
+    description: 'Apply now for the Content Writer role at Sphere Rocket VA.',
+  },
+  'construction-estimator': {
+    title: 'Apply — Construction Estimator | Sphere Rocket VA',
+    description: 'Apply now for the Construction Estimator role at Sphere Rocket VA.',
+  },
+  'crm-manager': {
+    title: 'Apply — CRM Manager | Sphere Rocket VA',
+    description: 'Apply now for the CRM Manager role at Sphere Rocket VA.',
+  },
+  'crm-specialist': {
+    title: 'Apply — CRM Specialist | Sphere Rocket VA',
+    description: 'Apply now for the CRM Specialist role at Sphere Rocket VA.',
+  },
+  'customer-service-va': {
+    title: 'Apply — Customer Service VA | Sphere Rocket VA',
+    description: 'Apply now for the Customer Service VA role at Sphere Rocket VA.',
+  },
+  'cyber-security-specialist': {
+    title: 'Apply — Cyber Security Specialist | Sphere Rocket VA',
+    description: 'Apply now for the Cyber Security Specialist role at Sphere Rocket VA.',
+  },
+  'data-analyst': {
+    title: 'Apply — Data Analyst | Sphere Rocket VA',
+    description: 'Apply now for the Data Analyst role at Sphere Rocket VA.',
+  },
+  'ecommerce-sourcing-specialist': {
+    title: 'Apply — Ecommerce Sourcing Specialist | Sphere Rocket VA',
+    description: 'Apply now for the Ecommerce Sourcing Specialist role at Sphere Rocket VA.',
+  },
+  'ecommerce-shopify-va': {
+    title: 'Apply — Ecommerce/Shopify VA | Sphere Rocket VA',
+    description: 'Apply now for the Ecommerce/Shopify VA role at Sphere Rocket VA.',
+  },
+  'financial-director': {
+    title: 'Apply — Financial Director | Sphere Rocket VA',
+    description: 'Apply now for the Financial Director role at Sphere Rocket VA.',
+  },
+  'full-stack-web-developer': {
+    title: 'Apply — Full stack Web Developer | Sphere Rocket VA',
+    description: 'Apply now for the Full stack Web Developer role at Sphere Rocket VA.',
+  },
+  'graphic-designer': {
+    title: 'Apply — Graphic Designer | Sphere Rocket VA',
+    description: 'Apply now for the Graphic Designer role at Sphere Rocket VA.',
+  },
+  'hr-coordinator': {
+    title: 'Apply — HR Coordinator | Sphere Rocket VA',
+    description: 'Apply now for the HR Coordinator role at Sphere Rocket VA.',
+  },
+  'investment-analyst': {
+    title: 'Apply — Investment Analyst | Sphere Rocket VA',
+    description: 'Apply now for the Investment Analyst role at Sphere Rocket VA.',
+  },
+  'listing-coordinator': {
+    title: 'Apply — Listing Coordinator | Sphere Rocket VA',
+    description: 'Apply now for the Listing Coordinator role at Sphere Rocket VA.',
+  },
+  'media-buyer': {
+    title: 'Apply — Media Buyer | Sphere Rocket VA',
+    description: 'Apply now for the Media Buyer role at Sphere Rocket VA.',
+  },
+  'mortgage-assistant': {
+    title: 'Apply — Mortgage Assistant | Sphere Rocket VA',
+    description: 'Apply now for the Mortgage Assistant role at Sphere Rocket VA.',
+  },
+  'multimedia-virtual-assistant': {
+    title: 'Apply — Multimedia Virtual Assistant | Sphere Rocket VA',
+    description: 'Apply now for the Multimedia Virtual Assistant role at Sphere Rocket VA.',
+  },
+  'med-va': {
+    title: 'Apply — Med VA | Sphere Rocket VA',
+    description: 'Apply now for the Med VA role at Sphere Rocket VA.',
+  },
+  'procurement-administrative-assistant': {
+    title: 'Apply — Procurement Administrative Assistant | Sphere Rocket VA',
+    description: 'Apply now for the Procurement Administrative Assistant role at Sphere Rocket VA.',
+  },
+  'project-manager': {
+    title: 'Apply — Project Manager | Sphere Rocket VA',
+    description: 'Apply now for the Project Manager role at Sphere Rocket VA.',
+  },
+  'property-manager': {
+    title: 'Apply — Property Manager | Sphere Rocket VA',
+    description: 'Apply now for the Property Manager role at Sphere Rocket VA.',
+  },
+  'recruiter': {
+    title: 'Apply — Recruiter | Sphere Rocket VA',
+    description: 'Apply now for the Recruiter role at Sphere Rocket VA.',
+  },
+  'reva': {
+    title: 'Apply — REVA | Sphere Rocket VA',
+    description: 'Apply now for the REVA role at Sphere Rocket VA.',
   },
   'social-media-manager': {
     title: 'Apply — Social Media Manager | Sphere Rocket VA',
     description: 'Apply now for the Social Media Manager role at Sphere Rocket VA.',
+  },
+  'transaction-coordinator': {
+    title: 'Apply — Transaction Coordinator | Sphere Rocket VA',
+    description: 'Apply now for the Transaction Coordinator role at Sphere Rocket VA.',
+  },
+  'video-editor': {
+    title: 'Apply — Video Editor | Sphere Rocket VA',
+    description: 'Apply now for the Video Editor role at Sphere Rocket VA.',
+  },
+  'web-designer': {
+    title: 'Apply — Web Designer | Sphere Rocket VA',
+    description: 'Apply now for the Web Designer role at Sphere Rocket VA.',
+  },
+  'web-developer': {
+    title: 'Apply — Web Developer | Sphere Rocket VA',
+    description: 'Apply now for the Web Developer role at Sphere Rocket VA.',
+  },
+  'youtube-specialist': {
+    title: 'Apply — YouTube Specialist | Sphere Rocket VA',
+    description: 'Apply now for the YouTube Specialist role at Sphere Rocket VA.',
+  },
+  'operations-manager': {
+    title: 'Apply — Operations Manager | Sphere Rocket VA',
+    description: 'Apply now for the Operations Manager role at Sphere Rocket VA.',
+  },
+  'other': {
+    title: 'Apply — Other | Sphere Rocket VA',
+    description: 'Apply now for the Other role at Sphere Rocket VA.',
   },
 };
 
