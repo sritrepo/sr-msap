@@ -46,18 +46,251 @@
   to     = "/index.html"
   status = 200
 
-# /web-developer — direct-role landing, Web Developer pre-selected
+# 1. Ads Specialist
 [[redirects]]
-  from   = "/web-developer"
-  to     = "/index.html?role=web-developer"
+  from   = "/ads-specialist"
+  to     = "/index.html?role=ads-specialist"
   status = 200
 
-# /social-media-manager — direct-role landing, Social Media Manager pre-selected
+# 2. Affiliate Marketer VA
+[[redirects]]
+  from   = "/affiliate-marketer-va"
+  to     = "/index.html?role=affiliate-marketer-va"
+  status = 200
+
+# 3. Agent Recruiter
+[[redirects]]
+  from   = "/agent-recruiter"
+  to     = "/index.html?role=agent-recruiter"
+  status = 200
+
+# 4. AI Automation Specialist
+[[redirects]]
+  from   = "/ai-automation-specialist"
+  to     = "/index.html?role=ai-automation-specialist"
+  status = 200
+
+# 5. Airbnb Virtual Assistant
+[[redirects]]
+  from   = "/airbnb-virtual-assistant"
+  to     = "/index.html?role=airbnb-virtual-assistant"
+  status = 200
+
+# 6. Chief Marketing Officer
+[[redirects]]
+  from   = "/chief-marketing-officer"
+  to     = "/index.html?role=chief-marketing-officer"
+  status = 200
+
+# 7. Client Care
+[[redirects]]
+  from   = "/client-care"
+  to     = "/index.html?role=client-care"
+  status = 200
+
+# 8. Client Success Manager
+[[redirects]]
+  from   = "/client-success-manager"
+  to     = "/index.html?role=client-success-manager"
+  status = 200
+
+# 9. Content Creator
+[[redirects]]
+  from   = "/content-creator"
+  to     = "/index.html?role=content-creator"
+  status = 200
+
+# 10. Content Writer
+[[redirects]]
+  from   = "/content-writer"
+  to     = "/index.html?role=content-writer"
+  status = 200
+
+# 11. Construction Estimator
+[[redirects]]
+  from   = "/construction-estimator"
+  to     = "/index.html?role=construction-estimator"
+  status = 200
+
+# 12. CRM Manager
+[[redirects]]
+  from   = "/crm-manager"
+  to     = "/index.html?role=crm-manager"
+  status = 200
+
+# 13. CRM Specialist
+[[redirects]]
+  from   = "/crm-specialist"
+  to     = "/index.html?role=crm-specialist"
+  status = 200
+
+# 14. Customer Service VA
+[[redirects]]
+  from   = "/customer-service-va"
+  to     = "/index.html?role=customer-service-va"
+  status = 200
+
+# 15. Cyber Security Specialist
+[[redirects]]
+  from   = "/cyber-security-specialist"
+  to     = "/index.html?role=cyber-security-specialist"
+  status = 200
+
+# 16. Data Analyst
+[[redirects]]
+  from   = "/data-analyst"
+  to     = "/index.html?role=data-analyst"
+  status = 200
+
+# 17. Ecommerce Sourcing Specialist
+[[redirects]]
+  from   = "/ecommerce-sourcing-specialist"
+  to     = "/index.html?role=ecommerce-sourcing-specialist"
+  status = 200
+
+# 18. Ecommerce/Shopify VA
+[[redirects]]
+  from   = "/ecommerce-shopify-va"
+  to     = "/index.html?role=ecommerce-shopify-va"
+  status = 200
+
+# 19. Financial Director
+[[redirects]]
+  from   = "/financial-director"
+  to     = "/index.html?role=financial-director"
+  status = 200
+
+# 20. Full stack Web Developer
+[[redirects]]
+  from   = "/full-stack-web-developer"
+  to     = "/index.html?role=full-stack-web-developer"
+  status = 200
+
+# 21. Graphic Designer
+[[redirects]]
+  from   = "/graphic-designer"
+  to     = "/index.html?role=graphic-designer"
+  status = 200
+
+# 22. HR Coordinator
+[[redirects]]
+  from   = "/hr-coordinator"
+  to     = "/index.html?role=hr-coordinator"
+  status = 200
+
+# 23. Investment Analyst
+[[redirects]]
+  from   = "/investment-analyst"
+  to     = "/index.html?role=investment-analyst"
+  status = 200
+
+# 24. Listing Coordinator
+[[redirects]]
+  from   = "/listing-coordinator"
+  to     = "/index.html?role=listing-coordinator"
+  status = 200
+
+# 25. Media Buyer
+[[redirects]]
+  from   = "/media-buyer"
+  to     = "/index.html?role=media-buyer"
+  status = 200
+
+# 26. Mortgage Assistant
+[[redirects]]
+  from   = "/mortgage-assistant"
+  to     = "/index.html?role=mortgage-assistant"
+  status = 200
+
+# 27. Multimedia Virtual Assistant
+[[redirects]]
+  from   = "/multimedia-virtual-assistant"
+  to     = "/index.html?role=multimedia-virtual-assistant"
+  status = 200
+
+# 28. Med VA
+[[redirects]]
+  from   = "/med-va"
+  to     = "/index.html?role=med-va"
+  status = 200
+
+# 29. Procurement Administrative Assistant
+[[redirects]]
+  from   = "/procurement-administrative-assistant"
+  to     = "/index.html?role=procurement-administrative-assistant"
+  status = 200
+
+# 30. Project Manager
+[[redirects]]
+  from   = "/project-manager"
+  to     = "/index.html?role=project-manager"
+  status = 200
+
+# 31. Property Manager
+[[redirects]]
+  from   = "/property-manager"
+  to     = "/index.html?role=property-manager"
+  status = 200
+
+# 32. Recruiter
+[[redirects]]
+  from   = "/recruiter"
+  to     = "/index.html?role=recruiter"
+  status = 200
+
+# 33. REVA
+[[redirects]]
+  from   = "/reva"
+  to     = "/index.html?role=reva"
+  status = 200
+
+# 34. Social Media Manager
 [[redirects]]
   from   = "/social-media-manager"
   to     = "/index.html?role=social-media-manager"
   status = 200
 
+# 35. Transaction Coordinator
+[[redirects]]
+  from   = "/transaction-coordinator"
+  to     = "/index.html?role=transaction-coordinator"
+  status = 200
+
+# 36. Video Editor
+[[redirects]]
+  from   = "/video-editor"
+  to     = "/index.html?role=video-editor"
+  status = 200
+
+# 37. Web Designer
+[[redirects]]
+  from   = "/web-designer"
+  to     = "/index.html?role=web-designer"
+  status = 200
+
+# 38. Web Developer
+[[redirects]]
+  from   = "/web-developer"
+  to     = "/index.html?role=web-developer"
+  status = 200
+
+# 39. YouTube Specialist
+[[redirects]]
+  from   = "/youtube-specialist"
+  to     = "/index.html?role=youtube-specialist"
+  status = 200
+
+# 40. Operations Manager
+[[redirects]]
+  from   = "/operations-manager"
+  to     = "/index.html?role=operations-manager"
+  status = 200
+
+# 41. Other
+[[redirects]]
+  from   = "/other"
+  to     = "/index.html?role=other"
+  status = 200
 # Security Headers
 #
 # IMPORTANT re: iframe embedding
