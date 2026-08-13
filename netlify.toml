@@ -17,6 +17,47 @@
   to     = "/index.html"
   status = 200
 
+# ─────────────────────────────────────────────────────────────────────────────
+# ROLE-SPECIFIC APPLICATION PAGES
+#
+# One index.html powers every application page. These redirects rewrite a
+# clean slug URL to index.html with a ?role= query param — status 200 means
+# it's a REWRITE (proxy), not a redirect, so the browser address bar keeps
+# showing the clean slug (e.g. /web-developer), never the ?role=... part.
+#
+# index.html reads that query param on load, looks it up in the SLUG_ROLE_MAP
+# object near the bottom of the <script>, and if it matches a known role:
+#   - skips the IC/BPO contract-type step
+#   - lands the visitor on the position screen with that role pre-selected
+#     and its job description already expanded
+#
+# ── TO ADD A NEW ROLE PAGE ──
+#   1. Copy one of the [[redirects]] blocks below.
+#   2. Change `from` to your new slug (e.g. "/content-writer").
+#   3. Change `to` to match — "/index.html?role=content-writer".
+#   4. Add the matching slug → exact role name pair to SLUG_ROLE_MAP in
+#      index.html (must match a `name` in the POSITIONS array exactly).
+# No new HTML files needed — that's it.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# /general-application — alias to the standard flow (same as "/", IC/BPO step included)
+[[redirects]]
+  from   = "/general-application"
+  to     = "/index.html"
+  status = 200
+
+# /web-developer — direct-role landing, Web Developer pre-selected
+[[redirects]]
+  from   = "/web-developer"
+  to     = "/index.html?role=web-developer"
+  status = 200
+
+# /social-media-manager — direct-role landing, Social Media Manager pre-selected
+[[redirects]]
+  from   = "/social-media-manager"
+  to     = "/index.html?role=social-media-manager"
+  status = 200
+
 # Security Headers
 #
 # IMPORTANT re: iframe embedding

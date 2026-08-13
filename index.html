@@ -452,7 +452,7 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
   </div>
   <div class="err-position" id="err-position">Please select a position to continue.</div>
   <div class="screen-nav">
-    <button class="btn btn-outline" onclick="goToScreen1()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg> Back</button>
+    <button class="btn btn-outline" id="screen2-back-btn" onclick="goToScreen1()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg> Back</button>
     <button class="btn btn-primary" onclick="goToForm()">Start Application <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
   </div>
 </div>
@@ -1403,7 +1403,9 @@ async function submitApplication() {
       // Step 4
       terms_agreed:             document.getElementById('terms_agreed').checked ? 'I Agree' : 'No',
       submitted_at:             new Date().toISOString(),
-      source:                   'Sphere Rocket VA — General Application',
+      source:                   getDirectRoleSlug() && SLUG_ROLE_MAP[getDirectRoleSlug()]
+                                   ? 'Sphere Rocket VA — Direct Role Application (' + selectedPosition + ')'
+                                   : 'Sphere Rocket VA — General Application',
       // ── FUTURE: IC / BPO specific fields (uncomment after legal review) ──
       // ic_rate_per_hour: '', ic_contract_signed: '', ic_preferred_schedule: '',
       // bpo_team_name: '', bpo_shift_preference: '', bpo_equipment_provided: '', bpo_nda_signed: '',
@@ -1451,9 +1453,82 @@ function showToast(msg, isError = false) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 4500);
 }
 
+// ── DIRECT-ROLE LANDING PAGES (slug support) ───────────────────────────────────
+// This one file powers EVERY application page — general and role-specific.
+// A role-specific URL like /web-developer is rewritten by netlify.toml to
+// /index.html?role=web-developer (URL bar still shows the clean slug).
+// On load, if ?role= matches an entry below, Screen 1 (contract type) is
+// skipped, contract_type defaults to "Both (IC & BPO)", and the visitor lands
+// on Screen 2 with that role already selected and its JD expanded.
+//
+// ── TO ADD A NEW ROLE PAGE ──
+//   1. Add one line to SLUG_ROLE_MAP below — the value must match a `name`
+//      in the POSITIONS array EXACTLY (copy-paste it to be safe).
+//   2. Add one redirect block to netlify.toml (see the commented example there).
+//   3. (Optional) Add a matching entry to SLUG_META for a custom tab title.
+// That's it — no new HTML files needed.
+const SLUG_ROLE_MAP = {
+  'web-developer':        'Web Developer',
+  'social-media-manager': 'Social Media Manager',
+};
+
+const SLUG_META = {
+  'web-developer': {
+    title: 'Apply — Web Developer | Sphere Rocket VA',
+    description: 'Apply now for the Web Developer role at Sphere Rocket VA.',
+  },
+  'social-media-manager': {
+    title: 'Apply — Social Media Manager | Sphere Rocket VA',
+    description: 'Apply now for the Social Media Manager role at Sphere Rocket VA.',
+  },
+};
+
+function getDirectRoleSlug() {
+  return new URLSearchParams(window.location.search).get('role');
+}
+
+function initApp() {
+  buildPositionList('');
+
+  const slug     = getDirectRoleSlug();
+  const roleName = slug ? SLUG_ROLE_MAP[slug] : null;
+  const posMatch = roleName ? POSITIONS.some(p => p.name === roleName) : false;
+
+  if (roleName && posMatch) {
+    // ── Direct-role landing ──
+    selectedContract = 'BOTH';   // fixed default — Screen 1 is intentionally skipped
+    selectedPosition = roleName;
+
+    const meta = SLUG_META[slug];
+    if (meta) {
+      document.title = meta.title;
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.setAttribute('name', 'description');
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.setAttribute('content', meta.description);
+    }
+
+    showScreen('screen-2');
+    renderJDPanel(selectedPosition);
+    collapsePickerList();
+
+    // No Screen 1 to return to on a direct-role landing — hide the Back button.
+    const backBtn = document.getElementById('screen2-back-btn');
+    if (backBtn) backBtn.style.display = 'none';
+
+  } else {
+    if (roleName && !posMatch) {
+      console.warn('SLUG_ROLE_MAP has "' + slug + '" → "' + roleName + '" but no POSITIONS entry matches that name exactly. Falling back to general application.');
+    }
+    showScreen('screen-1');
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
-buildPositionList('');
-showScreen('screen-1');
+initApp();
 </script>
 
 <!-- IFRAME RESIZE — observers setup
