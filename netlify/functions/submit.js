@@ -1,101 +1,67 @@
 // netlify/functions/submit.js
 //
 // Secure proxy — receives multipart/form-data (text fields + file uploads)
-// from the application form and forwards everything directly to Zapier.
+// from the application form and posts it DIRECTLY to Manatal. Zapier is
+// no longer in the loop.
 //
-// File size caps enforced on the client keep the total payload under
-// Netlify's 6MB function body limit:
-//   resume_file       2 MB
-//   gov_id_file       1 MB
-//   disc_file         500 KB
-//   device_specs_file 500 KB
-//   speed_test_file   500 KB
-//   ─────────────────────────
-//   Worst case total  ~4.5 MB  (well under the 6 MB limit)
+// Flow per submission:
+//   1. Validate origin + content-type, decode body, enforce size cap.
+//   2. Parse the multipart body into fields + files.
+//   3. Map the selected position to a Manatal job_id.
+//   4. POST to Manatal's career-page /apply/ endpoint (creates/finds the
+//      candidate by email, attaches them to the job, uploads the resume).
+//   5. PATCH the candidate's custom fields with the rest of the form's
+//      answers, then upload the remaining files (gov ID, DISC, device
+//      specs, speed test) as candidate attachments.
+//   6. If ANY of steps 3-5 throw, the original raw submission is saved
+//      untouched to Netlify Blobs (see lib/dead-letter-store.js) so
+//      retry-failed-submissions.js can replay it later. The applicant
+//      still gets a success response — we don't want a Manatal hiccup to
+//      show up as a broken form on the client side.
 //
 // Required environment variables (Netlify dashboard):
-//   ZAPIER_WEBHOOK_URL   — Zapier catch hook URL (never in client code)
-//   CHILD_KEY            — secret checked by Zapier Filter step
+//   MANATAL_API_TOKEN    — Manatal Open API bearer token (admin-only, from Manatal support)
+//   MANATAL_CLIENT_SLUG  — defaults to "sphererocketva" if unset
 //   ALLOWED_ORIGINS      — comma-separated allowed origins (optional)
+//
+// Dependencies to add to package.json: busboy, @netlify/blobs
 
-const https = require('https');
-const http  = require('http');
-const { URL } = require('url');
+const { parseMultipart } = require('./lib/multipart');
+const { processSubmission } = require('./lib/process-submission');
+const { saveFailedSubmission } = require('./lib/dead-letter-store');
 
-function forwardToZapier(webhookUrl, headers, body) {
-  return new Promise((resolve, reject) => {
-    const parsed  = new URL(webhookUrl);
-    const isHttps = parsed.protocol === 'https:';
-    const lib     = isHttps ? https : http;
-
-    const options = {
-      hostname: parsed.hostname,
-      port:     parsed.port || (isHttps ? 443 : 80),
-      path:     parsed.pathname + parsed.search,
-      method:   'POST',
-      headers,
-    };
-
-    const req = lib.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => { data += chunk; });
-      res.on('end', () => resolve({ status: res.statusCode, body: data }));
-    });
-
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
-}
-
-exports.handler = async function(event) {
-
-  // Only accept POST
+exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  // Secrets — never exposed to browser
-  const ZAPIER_WEBHOOK_URL = process.env.ZAPIER_WEBHOOK_URL;
-  const CHILD_KEY          = process.env.CHILD_KEY || '';
-
-  if (!ZAPIER_WEBHOOK_URL) {
-    console.error('ZAPIER_WEBHOOK_URL is not set.');
-    return { statusCode: 500, body: 'Server configuration error: missing webhook URL.' };
-  }
-
   // Origin guard — leave ALLOWED_ORIGINS empty to allow all (fine during testing)
   const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
-    .split(',').map(o => o.trim()).filter(Boolean);
+    .split(',').map((o) => o.trim()).filter(Boolean);
 
-  const origin  = (event.headers['origin']  || '').trim();
+  const origin = (event.headers['origin'] || '').trim();
   const referer = (event.headers['referer'] || '').trim();
 
   if (allowedOrigins.length > 0) {
-    const isAllowed = allowedOrigins.some(
-      o => origin.startsWith(o) || referer.startsWith(o)
-    );
+    const isAllowed = allowedOrigins.some((o) => origin.startsWith(o) || referer.startsWith(o));
     if (!isAllowed) {
       console.warn(`Blocked — origin: "${origin}"`);
       return { statusCode: 403, body: 'Forbidden: origin not allowed.' };
     }
   }
 
-  const responseOrigin =
-    allowedOrigins.find(o => origin.startsWith(o)) || allowedOrigins[0] || '*';
+  const responseOrigin = allowedOrigins.find((o) => origin.startsWith(o)) || allowedOrigins[0] || '*';
+  const corsHeaders = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': responseOrigin };
 
-  // Validate content-type
   const contentType = event.headers['content-type'] || '';
   if (!contentType.includes('multipart/form-data')) {
     return { statusCode: 400, body: 'Expected multipart/form-data.' };
   }
 
-  // Decode body — Netlify base64-encodes binary (multipart with files)
   const rawBody = event.isBase64Encoded
     ? Buffer.from(event.body, 'base64')
     : Buffer.from(event.body || '', 'utf8');
 
-  // Server-side size guard (backup — client already validates)
   const MAX_BYTES = 5.5 * 1024 * 1024; // 5.5 MB hard ceiling
   if (rawBody.length > MAX_BYTES) {
     console.warn(`Payload too large: ${rawBody.length} bytes`);
@@ -105,35 +71,38 @@ exports.handler = async function(event) {
     };
   }
 
-  // Forward to Zapier — preserve Content-Type with boundary so Zapier parses files
-  const forwardHeaders = {
-    'Content-Type':   contentType,
-    'Content-Length': rawBody.length,
-    'X-Child-Key':    CHILD_KEY,
-    'X-Source':       'sphere-rocket-va-form',
-    'User-Agent':     'SphereRocketVA-Proxy/1.0',
-  };
+  let parsed;
+  try {
+    parsed = await parseMultipart(rawBody, contentType);
+  } catch (err) {
+    // A malformed body is a client-side problem, not something retrying
+    // against Manatal would fix — fail fast instead of dead-lettering it.
+    console.error('Multipart parse failed:', err.message);
+    return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ success: false, error: 'Malformed submission.' }) };
+  }
 
   try {
-    const result = await forwardToZapier(ZAPIER_WEBHOOK_URL, forwardHeaders, rawBody);
-
-    if (result.status >= 200 && result.status < 300) {
-      console.log('Zapier accepted submission — status:', result.status);
-      return {
-        statusCode: 200,
-        headers: {
-          'Content-Type':                'application/json',
-          'Access-Control-Allow-Origin': responseOrigin,
-        },
-        body: JSON.stringify({ success: true }),
-      };
-    } else {
-      console.error('Zapier error:', result.status, result.body);
-      return { statusCode: 502, body: `Zapier error: ${result.status}` };
+    const { candidateId, jobId } = await processSubmission(parsed);
+    console.log(`Manatal candidate ${candidateId} applied to job ${jobId}`);
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ success: true }) };
+  } catch (err) {
+    console.error('Manatal submission failed, dead-lettering:', err.message);
+    try {
+      await saveFailedSubmission({
+        rawBody,
+        contentType,
+        errorMessage: err.message,
+        candidateEmail: parsed.fields.email,
+      });
+    } catch (dlqErr) {
+      // Worst case: Manatal AND Blobs both failed. Log loudly — this is
+      // the one scenario that can actually lose an application.
+      console.error('DEAD-LETTER WRITE FAILED — submission may be lost:', dlqErr.message, 'original error:', err.message);
     }
 
-  } catch (err) {
-    console.error('Failed to reach Zapier:', err.message);
-    return { statusCode: 500, body: 'Internal server error: could not reach webhook.' };
+    // Still return success to the applicant: their submission is safely
+    // queued for retry, and a visible error here just confuses candidates
+    // with no ability to fix the underlying problem.
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ success: true }) };
   }
 };
