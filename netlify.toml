@@ -298,6 +298,10 @@
 # Setting SAMEORIGIN or DENY here would block the Webflow iframe embed.
 # We use CSP frame-ancestors instead (modern standard, per-domain control).
 #
+
+[functions."retry-failed-submissions"]
+  schedule = "*/15 * * * *"
+  
 [[headers]]
   for = "/*"
   [headers.values]
