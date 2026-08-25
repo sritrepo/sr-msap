@@ -19,6 +19,12 @@
 //     below tries all three and throws a clear error if none match, so a
 //     schema surprise fails loud instead of silently dropping the
 //     follow-up custom-field/attachment calls.
+//
+// FIXED (Aug 2026): uploadCandidateAttachment() previously sent a binary
+// Blob for `file`, but Manatal's docs specify `file` as a URL string —
+// this was very likely why attachments weren't landing correctly. It now
+// takes `fileUrl` (see lib/file-hosting.js for how files get a public URL
+// before this is called) and sends JSON instead of multipart.
 
 const API_ROOT = 'https://api.manatal.com/open/v3';
 
@@ -131,17 +137,21 @@ async function patchCandidateCustomFields({ token, candidateId, customFields }) 
 /**
  * Uploads a single non-resume file (gov ID, DISC result, device specs,
  * speed test) as a candidate attachment.
+ *
+ * IMPORTANT: per Manatal's docs (developers.manatal.com/reference/
+ * candidates_attachments_create), the `file` param is documented as
+ * "Url leading to the attachment file" — a URL STRING, not a binary
+ * upload. This was previously sending a multipart Blob, which the API
+ * likely rejected or silently mishandled. `fileUrl` must be a public URL
+ * the file is already hosted at (see lib/file-hosting.js) — this
+ * function does not upload bytes itself.
  */
-async function uploadCandidateAttachment({ token, candidateId, file, label }) {
-  const form = new FormData();
-  form.set('file', new Blob([file.buffer], { type: file.contentType }), file.filename);
-  if (label) form.set('name', label);
-
+async function uploadCandidateAttachment({ token, candidateId, fileUrl, label }) {
   const url = `${API_ROOT}/candidates/${candidateId}/attachments/`;
   const res = await requestWithRetry(url, {
     method: 'POST',
-    headers: authHeaders(token),
-    body: form,
+    headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: label || 'Attachment', file: fileUrl }),
   });
 
   if (!res.ok) {

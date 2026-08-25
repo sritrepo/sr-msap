@@ -10,6 +10,8 @@ const {
   patchCandidateCustomFields,
   uploadCandidateAttachment,
 } = require('./manatal-client');
+const { validateAndNormalizeFile } = require('./file-validator');
+const { hostAttachment } = require('./file-hosting');
 
 const MANATAL_TOKEN = process.env.MANATAL_API_TOKEN;
 const CLIENT_SLUG = process.env.MANATAL_CLIENT_SLUG || 'sphererocketva';
@@ -99,7 +101,14 @@ async function processSubmission({ fields, files }) {
   for (const { field, label } of ATTACHMENT_FIELDS) {
     const file = files[field];
     if (file) {
-      await uploadCandidateAttachment({ token: MANATAL_TOKEN, candidateId, file, label });
+      // 1. Validate against Manatal's constraints (5MB cap, PDF/DOC/DOCX/RTF)
+      //    and convert images to PDF only if needed — see file-validator.js.
+      const normalized = await validateAndNormalizeFile(file);
+      // 2. Host the (possibly converted) bytes publicly — Manatal's
+      //    attachment endpoint requires a URL, not raw bytes.
+      const fileUrl = await hostAttachment(normalized);
+      // 3. Send the URL, not the file itself.
+      await uploadCandidateAttachment({ token: MANATAL_TOKEN, candidateId, fileUrl, label });
     }
   }
 
