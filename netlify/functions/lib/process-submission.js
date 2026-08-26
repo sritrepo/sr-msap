@@ -7,6 +7,7 @@
 const { mapPositionToJobId } = require('./job-mapping');
 const {
   applyToJob,
+  findCandidateByEmail,
   patchCandidateCustomFields,
   uploadCandidateAttachment,
 } = require('./manatal-client');
@@ -81,7 +82,7 @@ async function processSubmission({ fields, files }) {
 
   const jobId = mapPositionToJobId(fields.position);
 
-  const { candidateId } = await applyToJob({
+  await applyToJob({
     token: MANATAL_TOKEN,
     clientSlug: CLIENT_SLUG,
     jobId,
@@ -92,6 +93,11 @@ async function processSubmission({ fields, files }) {
     message: fields.skills_summary,
     resumeFile: files.resume_file,
   });
+
+  // /apply/'s response never contains a candidate id (confirmed via direct
+  // testing — it's just {"status": "Candidate added to job"}), so we look
+  // the candidate up by the email we just submitted.
+  const candidateId = await findCandidateByEmail({ token: MANATAL_TOKEN, email: fields.email });
 
   const customFields = buildCustomFieldsPayload(fields);
   if (Object.keys(customFields).length > 0) {

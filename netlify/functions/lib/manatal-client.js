@@ -54,20 +54,37 @@ function authHeaders(token) {
   return { Authorization: `Token ${token}` };
 }
 
-function extractCandidateId(applyResponseJson) {
-  const id =
-    applyResponseJson?.candidate?.id ??
-    applyResponseJson?.candidate_id ??
-    applyResponseJson?.id;
+/**
+ * CONFIRMED (Aug 2026, via direct curl test): /apply/'s success response
+ * is just {"status": "Candidate added to job"} — it NEVER returns a
+ * candidate id, under any response shape. The previous extractCandidateId()
+ * guessed at candidate.id/candidate_id/id and correctly failed loud when
+ * none matched — that failure is what told us the real shape.
+ *
+ * Fix: look the candidate up by email right after creating them.
+ * /candidates/ (the authenticated Open API, not career-page) supports
+ * `email` as an exact-match query param per Manatal's docs.
+ */
+async function findCandidateByEmail({ token, email }) {
+  const url = `${API_ROOT}/candidates/?email=${encodeURIComponent(email)}`;
+  const res = await requestWithRetry(url, {
+    method: 'GET',
+    headers: authHeaders(token),
+  });
 
-  if (!id) {
-    throw new Error(
-      `Could not find candidate id in Manatal /apply/ response. Got keys: ${Object.keys(
-        applyResponseJson || {}
-      ).join(', ')}`
-    );
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Manatal candidate lookup failed (${res.status}): ${text.slice(0, 500)}`);
   }
-  return id;
+
+  const json = await res.json();
+  const candidate = json?.results?.[0];
+
+  if (!candidate?.id) {
+    throw new Error(`No candidate found for email "${email}" after /apply/ — got ${json?.count ?? 0} results.`);
+  }
+
+  return candidate.id;
 }
 
 /**
@@ -117,7 +134,9 @@ async function applyToJob({ token, clientSlug, jobId, fullName, email, phone, li
     throw new Error(`Manatal /apply/ failed (${res.status}): ${text.slice(0, 500)}`);
   }
 
-  return { candidateId: extractCandidateId(json || {}), raw: json };
+  // No candidate id in this response by design — caller must look it up
+  // via findCandidateByEmail() using the same email.
+  return { raw: json };
 }
 
 /**
@@ -169,4 +188,4 @@ async function uploadCandidateAttachment({ token, candidateId, fileUrl, label })
   return res.json();
 }
 
-module.exports = { applyToJob, patchCandidateCustomFields, uploadCandidateAttachment, extractCandidateId };
+module.exports = { applyToJob, findCandidateByEmail, patchCandidateCustomFields, uploadCandidateAttachment };
