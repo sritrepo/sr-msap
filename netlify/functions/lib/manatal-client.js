@@ -90,10 +90,18 @@ async function applyToJob({ token, clientSlug, jobId, fullName, email, phone, li
     );
   }
 
+  // NOTE (Aug 2026): deliberately NOT sending an Authorization header here.
+  // /career-page/.../apply/ is a public, unauthenticated candidate
+  // self-apply endpoint — Manatal's own docs list only 400/404/500 as
+  // possible responses, never 401/403, and the sibling /jobs/ and
+  // /application-form/ endpoints under the same career-page path already
+  // work with zero auth. Sending our admin-scoped MANATAL_API_TOKEN here
+  // caused a 403 "You do not have permission to perform this action" —
+  // consistent with a valid token being rejected for an action it was
+  // never meant to authorize, not a credentials problem.
   const url = `${API_ROOT}/career-page/${clientSlug}/jobs/${jobId}/apply/`;
   const res = await requestWithRetry(url, {
     method: 'POST',
-    headers: authHeaders(token),
     body: form,
   });
 
