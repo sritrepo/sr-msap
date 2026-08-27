@@ -11,12 +11,12 @@
 // Netlify Blobs is enabled by default on sites deployed via Netlify's Git
 // integration — no extra provisioning needed.
 
-const { getStore } = require('@netlify/blobs');
+const { getConfiguredStore } = require('./blobs-config');
 
 const STORE_NAME = 'failed-submissions';
 
 function store() {
-  return getStore(STORE_NAME);
+  return getConfiguredStore(STORE_NAME);
 }
 
 /**

@@ -9,7 +9,7 @@
 //
 // Requires: npm install @netlify/blobs
 
-const { getStore } = require('@netlify/blobs');
+const { getConfiguredStore } = require('./blobs-config');
 
 const STORE_NAME = 'candidate-attachments';
 
@@ -24,7 +24,7 @@ const SITE_URL =
  * @returns {Promise<string>} public URL Manatal can fetch the file from
  */
 async function hostAttachment(file) {
-  const store = getStore(STORE_NAME);
+  const store = getConfiguredStore(STORE_NAME);
   const key = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${file.filename}`;
 
   await store.set(key, file.buffer, {

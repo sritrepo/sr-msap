@@ -11,7 +11,7 @@
 //
 // Requires: npm install @netlify/blobs
 
-const { getStore } = require('@netlify/blobs');
+const { getConfiguredStore } = require('./lib/blobs-config');
 const { STORE_NAME } = require('./lib/file-hosting');
 
 // Keys are always written by file-hosting.js in this exact shape:
@@ -25,7 +25,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: 'Invalid or missing file key' };
   }
 
-  const store = getStore(STORE_NAME);
+  const store = getConfiguredStore(STORE_NAME);
 
   const [blob, metadata] = await Promise.all([
     store.get(key, { type: 'arrayBuffer' }),
