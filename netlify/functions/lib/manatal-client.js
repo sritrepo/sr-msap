@@ -140,18 +140,52 @@ async function applyToJob({ token, clientSlug, jobId, fullName, email, phone, li
 }
 
 /**
+ * CRITICAL (confirmed via Manatal's own docs, developers.manatal.com/
+ * reference/custom-fields): custom_fields is stored as ONE JSON blob, and
+ * PATCHing it performs a FULL OVERWRITE — not a merge. Sending only our
+ * form's fields would silently destroy anything already on the record
+ * (recruiter notes, data from a prior application, anything set manually
+ * in the Manatal UI). This matters concretely for us: "Reapplication
+ * Opportunity" is one of our actual job posts, so returning candidates
+ * with existing custom_fields data are an expected case, not an edge case.
+ */
+async function getCandidate({ token, candidateId }) {
+  const url = `${API_ROOT}/candidates/${candidateId}/`;
+  const res = await requestWithRetry(url, {
+    method: 'GET',
+    headers: authHeaders(token),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Manatal candidate lookup by id failed (${res.status}): ${text.slice(0, 500)}`);
+  }
+  return res.json();
+}
+
+/**
  * Writes the form's non-standard answers onto the candidate's custom
  * fields. `fieldMap` maps our internal field names to the Manatal custom
  * field slugs configured in your account (Settings > Custom Fields) —
  * fill these in once you've created/confirmed the fields on your end;
  * see MIGRATION_GUIDE.md.
+ *
+ * SAFE BY DESIGN: fetches the candidate's current custom_fields first and
+ * merges our new values into it, rather than overwriting the whole
+ * object — see getCandidate() above for why this is mandatory, not
+ * optional, per Manatal's own documented overwrite behavior.
  */
 async function patchCandidateCustomFields({ token, candidateId, customFields }) {
+  const candidate = await getCandidate({ token, candidateId });
+  const existingCustomFields = candidate?.custom_fields || {};
+
+  const mergedCustomFields = { ...existingCustomFields, ...customFields };
+
   const url = `${API_ROOT}/candidates/${candidateId}/`;
   const res = await requestWithRetry(url, {
     method: 'PATCH',
     headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
-    body: JSON.stringify({ custom_fields: customFields }),
+    body: JSON.stringify({ custom_fields: mergedCustomFields }),
   });
 
   if (!res.ok) {
@@ -188,4 +222,4 @@ async function uploadCandidateAttachment({ token, candidateId, fileUrl, label })
   return res.json();
 }
 
-module.exports = { applyToJob, findCandidateByEmail, patchCandidateCustomFields, uploadCandidateAttachment };
+module.exports = { applyToJob, findCandidateByEmail, getCandidate, patchCandidateCustomFields, uploadCandidateAttachment };

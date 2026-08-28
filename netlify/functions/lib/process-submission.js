@@ -61,8 +61,44 @@ const CUSTOM_FIELD_MAP = {
   // complete_address:       'complete_address',
 };
 
+/**
+ * CONFIRMED (Aug 2026, sourced directly from Kyle's qna-final.json export
+ * of these fields, which lists field_category: "candidate_field" for
+ * each — meaning these slugs ARE real candidate custom field keys, not
+ * leftover data from an unrelated system): the 9 consent/disclaimer
+ * checkboxes on the form. Each is a Manatal `checkbox` field with
+ * type "array" and exactly one valid choice, "I Agree." (WITH the
+ * trailing period — confirmed against the exported choices array).
+ *
+ * Because type is "array", the value must be sent as an array, e.g.
+ * ["I Agree."], not a bare string — a bare string would very likely be
+ * silently rejected as not matching the field's expected shape.
+ *
+ * These always get sent, regardless of what the candidate submitted for
+ * other fields, since there's no legitimate alternative answer to a
+ * required consent checkbox with only one valid choice.
+ *
+ * NOT included here: "Have you attended any formal Virtual Assistant
+ * training program or course?" — also a checkbox field in the same
+ * export, but a real multi-choice question with 5 genuine answers, not
+ * a consent item. That one should come from the candidate's actual
+ * form answer via CUSTOM_FIELD_MAP above once its form field name is
+ * known, not be auto-filled.
+ */
+const AUTO_AGREE_CUSTOM_FIELDS = {
+  friendlyreminderwhenyouuploadyourresumepleasemakesuretoincludethejobtitleanddescriptionofthepositionyoureapplyingfor: ['I Agree.'],
+  iunderstandsphererocketvaisnotmyemployeranddoesnotguaranteejobplacementorhiring: ['I Agree.'],
+  sphererocketvaisausbasedtechplatformthatconnectsbusinessownersandvirtualassistantsforpotentialworkingrelationships: ['I Agree.'],
+  sphererocketvamayrecommendorintroduceprofilesbasedonfitbutallhiringdecisionsaremadesolelybytheclient: ['I Agree.'],
+  compensationcontractsandworktermsarenegotiateddirectlybetweentheclientandvasphererocketvaisnotapartytotheseagreements: ['I Agree.'],
+  sphererocketvadoesnotnegotiatepayassigntasksmanageschedulesorsupervisetheworkofanyvirtualassistant: ['I Agree.'],
+  iunderstandthatvettinginterviewsarenotjobinterviewsbutinternalassessmentsusedforprofilereviewandfuturematching: ['I Agree.'],
+  notallapplicantswillbematchedorselectedvisibilitydependsonclientdemandskillalignmentandplatformneeds: ['I Agree.'],
+  imayupdateorresubmitmyapplicationatanytimetoreflectnewskillstoolsavailabilityorotherrelevantchanges: ['I Agree.'],
+};
+
 function buildCustomFieldsPayload(fields) {
-  const payload = {};
+  const payload = { ...AUTO_AGREE_CUSTOM_FIELDS };
   for (const [formField, manatalSlug] of Object.entries(CUSTOM_FIELD_MAP)) {
     if (fields[formField] !== undefined && fields[formField] !== '') {
       payload[manatalSlug] = fields[formField];
