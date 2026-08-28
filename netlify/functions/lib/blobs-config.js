@@ -24,8 +24,16 @@
 
 const { getStore } = require('@netlify/blobs');
 
+// CORRECTED (Aug 27): the auto-injected variable is `SITE_ID`, not
+// `NETLIFY_SITE_ID` — confirmed directly against Netlify's own docs
+// (docs.netlify.com/build/functions/environment-variables), which list
+// only URL, SITE_NAME, and SITE_ID as available to functions at runtime.
+// The original NETLIFY_SITE_ID reference was wrong and silently always
+// fell through to the broken fallback branch below, even with
+// NETLIFY_BLOBS_TOKEN correctly set — confirmed via a real production
+// stack trace pointing at the fallback getStore(name) call.
 function getConfiguredStore(name) {
-  const siteID = process.env.NETLIFY_SITE_ID;
+  const siteID = process.env.SITE_ID;
   const token = process.env.NETLIFY_BLOBS_TOKEN;
 
   if (siteID && token) {
