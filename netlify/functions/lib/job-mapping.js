@@ -2,11 +2,18 @@
 //
 // Maps a frontend "position" selection to a Manatal job_id.
 //
-// Per the migration spec, only 1 of the form's 41 position names is an
-// exact match against Manatal's listed jobs ("Social Media Manager").
-// Per Kyle's decision (Aug 2026), every other selection - including the
-// remaining 40 named roles and "Other" - routes to the general catch-all,
-// "50 Plus Other positions".
+// UPDATED (Aug 2026): 8 new roles (Bookkeeper, Copywriter, Digital
+// Marketing Manager, Executive Assistant, GoHighLevel (GHL) Specialist,
+// Inside Sales Agent, Lead Generation Specialist, SEO Specialist) were
+// added to the frontend's POSITIONS array specifically because they had
+// real, dedicated Manatal job posts but no corresponding selectable
+// option on the form — meaning every applicant for those roles was
+// silently landing in the "50 Plus Other positions" catch-all. Now
+// mapped 1:1. "Transaction Coordinator" and "Listing Coordinator" are
+// two separate frontend roles that both map to Manatal's single combined
+// "Transaction & Listing Coordinator" post, per the original migration
+// spec. Every other frontend role, and "Other", still routes to the
+// catch-all — there's no dedicated Manatal post for them.
 //
 // The LatAm and Reapplication catch-alls exist as Manatal job_ids but are
 // NOT wired up here: the current form has no region-selector or
@@ -47,6 +54,16 @@ const DEFAULT_JOB_ID = JOB_IDS.OTHER_POSITIONS;
 // through to DEFAULT_JOB_ID. Add rows here as you confirm more 1:1 matches.
 const EXPLICIT_MAP = {
   'Social Media Manager': JOB_IDS.SOCIAL_MEDIA_MANAGER,
+  'Transaction Coordinator': JOB_IDS.TRANSACTION_LISTING_COORD,
+  'Listing Coordinator': JOB_IDS.TRANSACTION_LISTING_COORD,
+  'Bookkeeper': JOB_IDS.BOOKKEEPER,
+  'Copywriter': JOB_IDS.COPYWRITER,
+  'Digital Marketing Manager': JOB_IDS.DIGITAL_MARKETING_MANAGER,
+  'Executive Assistant': JOB_IDS.EXECUTIVE_ASSISTANT,
+  'GoHighLevel (GHL) Specialist': JOB_IDS.GHL_SPECIALIST,
+  'Inside Sales Agent': JOB_IDS.INSIDE_SALES_AGENT,
+  'Lead Generation Specialist': JOB_IDS.LEAD_GEN_SPECIALIST,
+  'SEO Specialist': JOB_IDS.SEO_SPECIALIST,
 };
 
 /**
