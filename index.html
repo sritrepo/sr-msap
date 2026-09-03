@@ -394,7 +394,6 @@ select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 <!-- SCREEN 2 — POSITION PICKER -->
 <div class="screen" id="screen-2">
   <div class="screen-header">
-    <div class="screen-eyebrow">Step 2 of 2</div>
     <h1 class="screen-title">What role are you applying for?</h1>
     <p class="screen-subtitle">Select your position. The job description will appear below so you can review requirements before applying.</p>
   </div>
@@ -1693,13 +1692,20 @@ function getDirectRoleSlug() {
 function initApp() {
   buildPositionList('');
 
+  // Screen 1 (contract-type selection) is hidden site-wide for now —
+  // the "Both" option is pending legal review (see the commented
+  // #card-both block in Screen 1's HTML) and there's currently no
+  // Manatal custom field to receive contract_type at all (see
+  // process-submission.js). Not removed, just parked — defaulting
+  // everyone to 'BOTH' as a placeholder until this resurfaces.
+  selectedContract = 'BOTH';
+
   const slug     = getDirectRoleSlug();
   const roleName = slug ? SLUG_ROLE_MAP[slug] : null;
   const posMatch = roleName ? POSITIONS.some(p => p.name === roleName) : false;
 
   if (roleName && posMatch) {
     // ── Direct-role landing ──
-    selectedContract = 'BOTH';   // fixed default — Screen 1 is intentionally skipped
     selectedPosition = roleName;
 
     const meta = SLUG_META[slug];
@@ -1718,16 +1724,16 @@ function initApp() {
     renderJDPanel(selectedPosition);
     collapsePickerList();
 
-    // No Screen 1 to return to on a direct-role landing — hide the Back button.
-    const backBtn = document.getElementById('screen2-back-btn');
-    if (backBtn) backBtn.style.display = 'none';
-
   } else {
     if (roleName && !posMatch) {
       console.warn('SLUG_ROLE_MAP has "' + slug + '" → "' + roleName + '" but no POSITIONS entry matches that name exactly. Falling back to general application.');
     }
-    showScreen('screen-1');
+    showScreen('screen-2');
   }
+
+  // Screen 1 is parked (see note above) — no screen to go "Back" to.
+  const backBtn = document.getElementById('screen2-back-btn');
+  if (backBtn) backBtn.style.display = 'none';
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
