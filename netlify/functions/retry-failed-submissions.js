@@ -5,10 +5,10 @@
 // exact same pipeline submit.js uses. Successes are removed from the
 // store; failures increment an attempt counter and stay queued.
 //
-// After MAX_ATTEMPTS, a record is left in place (not deleted) but logged
-// as needing a human — this is the stopgap the team should replace once
-// a longer-term alerting approach (e.g. Slack/email on give-up) is
-// decided.
+// Records are retried every run for RETENTION_HOURS (48h, see
+// lib/dead-letter-store.js), then purged. Each record remembers which
+// Manatal steps already succeeded (apply / custom fields / each
+// attachment) so a retry never repeats completed work.
 //
 // Dependencies to add to package.json: @netlify/functions, @netlify/blobs, busboy
 //
@@ -24,32 +24,40 @@ const {
   getFailedSubmission,
   deleteFailedSubmission,
   incrementAttempts,
+  isExpired,
+  RETENTION_HOURS,
 } = require('./lib/dead-letter-store');
 
-const MAX_ATTEMPTS = 6; // ~90 min of retries at a 15-min schedule
 
 async function retryOne(key) {
   const record = await getFailedSubmission(key);
   if (!record) return;
 
+  // Retention: keep retrying every run until the record is older than
+  // RETENTION_HOURS, then purge it. Nothing is retried forever and
+  // nothing lingers (these records contain resumes / gov IDs).
+  if (isExpired(record)) {
+    console.error(
+      `PURGING ${key} (${record.candidateEmail || 'unknown email'}) — older than ${RETENTION_HOURS}h and never delivered. ` +
+      `Last error: ${record.errorMessage}`
+    );
+    await deleteFailedSubmission(key);
+    return;
+  }
+
+  const progress = record.progress || {};
   try {
     const rawBody = Buffer.from(record.bodyBase64, 'base64');
     const parsed = await parseMultipart(rawBody, record.contentType);
-    const { candidateId, jobId } = await processSubmission(parsed);
+    const { candidateId, jobId } = await processSubmission(parsed, progress);
 
     console.log(`Retry succeeded for ${key} — candidate ${candidateId} applied to job ${jobId}`);
     await deleteFailedSubmission(key);
   } catch (err) {
     const attempts = (record.attempts || 1) + 1;
     console.warn(`Retry ${attempts} failed for ${key} (${record.candidateEmail || 'unknown email'}): ${err.message}`);
-
-    if (attempts >= MAX_ATTEMPTS) {
-      console.error(
-        `GIVING UP after ${attempts} attempts on ${key} (${record.candidateEmail || 'unknown email'}). ` +
-        `Record retained in Blobs for manual recovery — this needs a human.`
-      );
-    }
-    await incrementAttempts(key, record);
+    // Persist whatever steps DID succeed this time so the next run resumes after them.
+    await incrementAttempts(key, { ...record, errorMessage: err.message }, err.progress || progress);
   }
 }
 

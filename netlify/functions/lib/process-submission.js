@@ -87,7 +87,6 @@ function stripToDigits(value) {
 //     defaults to "Both (IC & BPO)" as a placeholder. Feature is on
 //     hold, not removed — re-add a slug entry here once the field
 //     exists in Manatal.
-//   - internal_referral: see roster-mismatch note above.
 //
 // sr_client_name / sr_client_last_day are handled separately below
 // buildCustomFieldsPayload's main loop — Manatal only has one combined
@@ -140,7 +139,17 @@ const CUSTOM_FIELD_MAP = {
   alternative_phone:            { slug: 'contact' },
   facebook_url:                 { slug: 'whatisyourfacebookprofilelink' },
   complete_address:             { slug: 'address' },
+  // Added Sept 29 2026 — these two ALSO still go to Manatal's native
+  // `linkedin` / `message` params on /apply/ (see processSubmission).
+  linkedin_instagram_url:       { slug: 'pleaseshareyourlinkedininstagramprofilelink' },
+  skills_summary:               { slug: 'brieflyoutlineyourrelevantskillsandexperience' },
 };
+
+// Manatal dropdown, but confirmed by direct test (Kyle, Sept 29 2026)
+// that the API does NOT validate the value against the choices list, so
+// no translation/allowlist is needed: send whatever the form sent, or
+// "N/A" when the dropdown was hidden/left empty.
+const INTERNAL_REFERRAL_SLUG = 'ifyouwerereferredbyasphererocketinternalteampleaseinputthenamebelow';
 
 /**
  * CONFIRMED (Aug 2026, sourced directly from Kyle's qna-final.json export
@@ -203,6 +212,8 @@ function buildCustomFieldsPayload(fields) {
     payload[slug] = value;
   }
 
+  payload[INTERNAL_REFERRAL_SLUG] = (fields.internal_referral || '').trim() || 'N/A';
+
   // Combine the two frontend fields into Manatal's one field. Both are
   // optional (only relevant if previous_sr_client === 'Yes'), so only
   // send this at all if the candidate actually filled in at least one
@@ -221,50 +232,72 @@ function buildCustomFieldsPayload(fields) {
  * @param {{fields: Object, files: Object}} parsed - output of parseMultipart()
  * @returns {Promise<{candidateId: string|number, jobId: string}>}
  */
-async function processSubmission({ fields, files }) {
+async function processSubmission({ fields, files }, progress = {}) {
   if (!MANATAL_TOKEN) {
     throw new Error('MANATAL_API_TOKEN is not set.');
   }
 
-  const jobId = mapPositionToJobId(fields.position);
+  // `progress` records which steps already succeeded so a retry resumes
+  // where the last attempt died instead of repeating work (most
+  // importantly: re-uploading attachments that already landed). It is
+  // mutated in place and also attached to any thrown error as
+  // `err.progress` so the caller can persist it.
+  progress.attachments = progress.attachments || [];
 
-  await applyToJob({
-    token: MANATAL_TOKEN,
-    clientSlug: CLIENT_SLUG,
-    jobId,
-    fullName: fields.full_name,
-    email: fields.email,
-    phone: fields.phone,
-    linkedin: fields.linkedin_instagram_url,
-    message: fields.skills_summary,
-    resumeFile: files.resume_file,
-  });
+  try {
+    const jobId = mapPositionToJobId(fields.position);
 
-  // /apply/'s response never contains a candidate id (confirmed via direct
-  // testing — it's just {"status": "Candidate added to job"}), so we look
-  // the candidate up by the email we just submitted.
-  const candidateId = await findCandidateByEmail({ token: MANATAL_TOKEN, email: fields.email });
-
-  const customFields = buildCustomFieldsPayload(fields);
-  if (Object.keys(customFields).length > 0) {
-    await patchCandidateCustomFields({ token: MANATAL_TOKEN, candidateId, customFields });
-  }
-
-  for (const { field, label } of ATTACHMENT_FIELDS) {
-    const file = files[field];
-    if (file) {
-      // 1. Validate against Manatal's constraints (5MB cap, PDF/DOC/DOCX/RTF)
-      //    and convert images to PDF only if needed — see file-validator.js.
-      const normalized = await validateAndNormalizeFile(file);
-      // 2. Host the (possibly converted) bytes publicly — Manatal's
-      //    attachment endpoint requires a URL, not raw bytes.
-      const fileUrl = await hostAttachment(normalized);
-      // 3. Send the URL, not the file itself.
-      await uploadCandidateAttachment({ token: MANATAL_TOKEN, candidateId, fileUrl, label });
+    if (!progress.applied) {
+      await applyToJob({
+        token: MANATAL_TOKEN,
+        clientSlug: CLIENT_SLUG,
+        jobId,
+        fullName: fields.full_name,
+        email: fields.email,
+        phone: fields.phone,
+        linkedin: fields.linkedin_instagram_url,
+        message: fields.skills_summary,
+        resumeFile: files.resume_file,
+      });
+      progress.applied = true;
     }
-  }
 
-  return { candidateId, jobId };
+    // /apply/'s response never contains a candidate id (confirmed via direct
+    // testing — it's just {"status": "Candidate added to job"}), so we look
+    // the candidate up by the email we just submitted.
+    if (!progress.candidateId) {
+      progress.candidateId = await findCandidateByEmail({ token: MANATAL_TOKEN, email: fields.email });
+    }
+    const candidateId = progress.candidateId;
+
+    if (!progress.patched) {
+      const customFields = buildCustomFieldsPayload(fields);
+      if (Object.keys(customFields).length > 0) {
+        await patchCandidateCustomFields({ token: MANATAL_TOKEN, candidateId, customFields });
+      }
+      progress.patched = true;
+    }
+
+    for (const { field, label } of ATTACHMENT_FIELDS) {
+      const file = files[field];
+      if (file && !progress.attachments.includes(label)) {
+        // 1. Validate against Manatal's constraints (5MB cap, PDF/DOC/DOCX/RTF)
+        //    and convert images to PDF only if needed — see file-validator.js.
+        const normalized = await validateAndNormalizeFile(file);
+        // 2. Host the (possibly converted) bytes publicly — Manatal's
+        //    attachment endpoint requires a URL, not raw bytes.
+        const fileUrl = await hostAttachment(normalized);
+        // 3. Send the URL, not the file itself.
+        await uploadCandidateAttachment({ token: MANATAL_TOKEN, candidateId, fileUrl, label });
+        progress.attachments.push(label);
+      }
+    }
+
+    return { candidateId, jobId };
+  } catch (err) {
+    err.progress = progress;
+    throw err;
+  }
 }
 
 module.exports = { processSubmission, buildCustomFieldsPayload, CUSTOM_FIELD_MAP };

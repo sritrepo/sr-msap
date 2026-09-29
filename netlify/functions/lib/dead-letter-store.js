@@ -15,6 +15,13 @@ const { getConfiguredStore } = require('./blobs-config');
 
 const STORE_NAME = 'failed-submissions';
 
+// Netlify Blobs has no built-in expiry, so retention is enforced by the
+// scheduled retry job (it purges anything older than this). 48h = long
+// enough to ride out a day-long Manatal outage plus a day to notice,
+// short enough that gov IDs / resumes aren't sitting around for long.
+// Override with FAILED_SUBMISSION_RETENTION_HOURS if ever needed.
+const RETENTION_HOURS = Number(process.env.FAILED_SUBMISSION_RETENTION_HOURS) || 48;
+
 function store() {
   return getConfiguredStore(STORE_NAME);
 }
@@ -27,7 +34,7 @@ function store() {
  * @param {string} [params.candidateEmail] - best-effort, for a human scanning the list
  * @returns {Promise<string>} the key the record was stored under
  */
-async function saveFailedSubmission({ rawBody, contentType, errorMessage, candidateEmail }) {
+async function saveFailedSubmission({ rawBody, contentType, errorMessage, candidateEmail, progress }) {
   const key = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   await store().setJSON(key, {
@@ -37,6 +44,7 @@ async function saveFailedSubmission({ rawBody, contentType, errorMessage, candid
     candidateEmail: candidateEmail || null,
     failedAt: new Date().toISOString(),
     attempts: 1,
+    progress: progress || {},
   });
 
   return key;
@@ -55,8 +63,18 @@ async function deleteFailedSubmission(key) {
   return store().delete(key);
 }
 
-async function incrementAttempts(key, record) {
-  await store().setJSON(key, { ...record, attempts: (record.attempts || 1) + 1 });
+async function incrementAttempts(key, record, progress) {
+  await store().setJSON(key, {
+    ...record,
+    attempts: (record.attempts || 1) + 1,
+    progress: progress || record.progress || {},
+  });
+}
+
+function isExpired(record) {
+  const failedAt = Date.parse(record.failedAt);
+  if (Number.isNaN(failedAt)) return false;
+  return Date.now() - failedAt > RETENTION_HOURS * 60 * 60 * 1000;
 }
 
 module.exports = {
@@ -65,4 +83,6 @@ module.exports = {
   getFailedSubmission,
   deleteFailedSubmission,
   incrementAttempts,
+  isExpired,
+  RETENTION_HOURS,
 };

@@ -93,6 +93,7 @@ exports.handler = async function (event) {
         contentType,
         errorMessage: err.message,
         candidateEmail: parsed.fields.email,
+        progress: err.progress,
       });
     } catch (dlqErr) {
       // Worst case: Manatal AND Blobs both failed. Log loudly — this is
