@@ -214,6 +214,19 @@ function buildCustomFieldsPayload(fields) {
 
   payload[INTERNAL_REFERRAL_SLUG] = (fields.internal_referral || '').trim() || 'N/A';
 
+  // Raw selected position text, sent as-is regardless of whether it
+  // matched a specific Manatal job_id or fell through to a catch-all
+  // (see job-mapping.js). Added Sept 30 2026 so sourcing/recruitment can
+  // always see exactly what the candidate picked, even when the
+  // application itself landed under "50 Plus Other positions". Both
+  // slugs are populated with the same value — they appear to be
+  // separate custom fields per job category (general vs. VA-specific)
+  // rather than alternatives, so filling both is the safe default.
+  if (fields.position) {
+    payload['whatpositionareyouapplyingfor'] = fields.position;
+    payload['whatvapositionareyouapplyingfor'] = fields.position;
+  }
+
   // Combine the two frontend fields into Manatal's one field. Both are
   // optional (only relevant if previous_sr_client === 'Yes'), so only
   // send this at all if the candidate actually filled in at least one
