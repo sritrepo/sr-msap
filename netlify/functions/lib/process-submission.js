@@ -74,6 +74,29 @@ function stripToDigits(value) {
   return digits === '' ? undefined : Number(digits);
 }
 
+// Phone fields are free-text `tel` inputs on the frontend (placeholder
+// "+63 9XX XXX XXXX"), so the same real number can arrive as
+// "09171234567", "+639171234567", or "9171234567" depending on what the
+// candidate typed. Left as plain stripToDigits, those three become three
+// DIFFERENT integers in Manatal for the same person — bad for search/dedup.
+//
+// Almost all applicants are PH-based today (Kyle, Sept 30 2026), so this
+// normalizes to the PH E.164 shape (63 + 10-digit mobile number, no
+// leading 0) as a single consistent integer. A number that doesn't match
+// any recognized PH shape (wrong length, unexpected prefix — e.g. a
+// future overseas applicant) falls back to a plain digit-strip rather
+// than being dropped, so it still gets SOME value sent, just not
+// country-code-normalized. Revisit if/when non-PH applicants become
+// common enough to be worth their own handling.
+function normalizePHPhone(value) {
+  const digits = String(value).replace(/[^0-9]/g, '');
+  if (digits === '') return undefined;
+  if (digits.length === 11 && digits.startsWith('0')) return Number(`63${digits.slice(1)}`);
+  if (digits.length === 12 && digits.startsWith('63')) return Number(digits);
+  if (digits.length === 10 && digits.startsWith('9')) return Number(`63${digits}`);
+  return Number(digits); // not a recognized PH shape — send digits as-is
+}
+
 // Maps our form field names (the ACTUAL multipart payload keys the
 // frontend sends — several differ from the semantic names you'd guess,
 // see notes) to Manatal custom_fields slugs, confirmed against
@@ -98,6 +121,8 @@ const CUSTOM_FIELD_MAP = {
     slug: 'haveyouattendedanyformalvirtualassistanttrainingprogramorcourse',
     transform: (v) => (VA_TRAINING_MAP[v] ? [VA_TRAINING_MAP[v]] : undefined),
   },
+  // CONFIRMED (Kyle, Sept 30 2026, live test submission): slug is
+  // correct and lands on the candidate record as expected.
   va_training_details:      { slug: 'vatrainingdetails' },
   computer_type:            { slug: 'doyouownapcoramac' },
   backup_power_internet:    { slug: 'doyouhaveabackuppowersourceandinternetconnection' },
@@ -129,14 +154,13 @@ const CUSTOM_FIELD_MAP = {
   },
   previous_client_industry:     { slug: 'whatwasthebusinessindustryofyourpreviousclient' },
   emergency_contact_name:       { slug: 'emergencycontactname' },
-  // Manatal field type is integer, but this is a free-text `tel` input
-  // (e.g. "+63 9XX XXX XXXX"). Stripped to digits-only (e.g.
-  // "639171234567"). Kyle confirmed this field is real and in active
-  // use on the Manatal side — still worth a live test submission to
-  // make sure the digit-stripped format is what actually lands
-  // correctly, since that part hasn't been verified end-to-end yet.
-  emergency_contact_number:     { slug: 'emergencycontactnumber', transform: stripToDigits },
-  alternative_phone:            { slug: 'contact' },
+  // Manatal field type is integer. Kyle confirmed this field is real
+  // and in active use on the Manatal side. See normalizePHPhone above
+  // for why this isn't a plain digit-strip — still worth a live test
+  // submission to confirm the normalized format lands correctly, since
+  // that part hasn't been verified end-to-end yet.
+  emergency_contact_number:     { slug: 'emergencycontactnumber', transform: normalizePHPhone },
+  alternative_phone:            { slug: 'contact', transform: normalizePHPhone },
   facebook_url:                 { slug: 'whatisyourfacebookprofilelink' },
   complete_address:             { slug: 'address' },
   // Added Sept 29 2026 — these two ALSO still go to Manatal's native
@@ -148,7 +172,10 @@ const CUSTOM_FIELD_MAP = {
 // Manatal dropdown, but confirmed by direct test (Kyle, Sept 29 2026)
 // that the API does NOT validate the value against the choices list, so
 // no translation/allowlist is needed: send whatever the form sent, or
-// "N/A" when the dropdown was hidden/left empty.
+// "N/A" when left on the default (no one personally referred them).
+// Deliberately independent of referral_source/"how did you hear about
+// us" — a candidate can credit a specific team member (KPI-tracked)
+// regardless of which channel they came in through (Kyle, Oct 1 2026).
 const INTERNAL_REFERRAL_SLUG = 'ifyouwerereferredbyasphererocketinternalteampleaseinputthenamebelow';
 
 /**
