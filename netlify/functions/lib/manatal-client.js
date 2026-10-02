@@ -140,6 +140,56 @@ async function applyToJob({ token, clientSlug, jobId, fullName, email, phone, li
 }
 
 /**
+ * Finds the match (candidate-to-job pairing) created by the /apply/ call,
+ * so attachments can be filed under the SPECIFIC job rather than the
+ * candidate's general record (Kyle, Oct 1 2026 — tailored per-role resumes
+ * were landing as general candidate attachments instead of under the job
+ * they were submitted for, defeating the point of tailoring them).
+ *
+ * /apply/'s response doesn't include a match id (same gap as the
+ * candidate id — see findCandidateByEmail above), so this looks it up via
+ * /candidates/{id}/matches/ and picks the one with the latest
+ * submitted_at. ASSUMPTION TO VERIFY: this assumes the match we just
+ * created is the most recently submitted one for this candidate, which
+ * holds unless the same candidate has two applications landing within
+ * the same request cycle (unlikely, but worth confirming with one real
+ * multi-application test if a candidate ever applies twice in quick
+ * succession — e.g. immediately re-submitting with a tailored resume).
+ * Retries a few times with a short delay in case the match record lags
+ * slightly behind the /apply/ response (not documented either way by
+ * Manatal, so treating it as a possibility rather than assuming
+ * perfectly synchronous consistency).
+ */
+async function findMostRecentMatch({ token, candidateId }) {
+  const url = `${API_ROOT}/candidates/${candidateId}/matches/?page_size=50`;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const res = await requestWithRetry(url, { method: 'GET', headers: authHeaders(token) });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Manatal match lookup failed (${res.status}): ${text.slice(0, 500)}`);
+    }
+
+    const json = await res.json();
+    const matches = json?.results || [];
+
+    if (matches.length > 0) {
+      const mostRecent = matches.reduce((latest, m) => {
+        const mTime = Date.parse(m.submitted_at || m.created_at || 0);
+        const latestTime = Date.parse(latest.submitted_at || latest.created_at || 0);
+        return mTime > latestTime ? m : latest;
+      });
+      return mostRecent.id;
+    }
+
+    if (attempt < 3) await sleep(400 * attempt);
+  }
+
+  throw new Error(`No match found for candidate ${candidateId} after /apply/ — expected at least one.`);
+}
+
+/**
  * CRITICAL (confirmed via Manatal's own docs, developers.manatal.com/
  * reference/custom-fields): custom_fields is stored as ONE JSON blob, and
  * PATCHing it performs a FULL OVERWRITE — not a merge. Sending only our
@@ -222,4 +272,35 @@ async function uploadCandidateAttachment({ token, candidateId, fileUrl, label })
   return res.json();
 }
 
-module.exports = { applyToJob, findCandidateByEmail, getCandidate, patchCandidateCustomFields, uploadCandidateAttachment };
+/**
+ * Uploads a file as an attachment on a specific MATCH (candidate-to-job
+ * pairing) rather than the candidate's general record — see
+ * findMostRecentMatch above for why this matters. Same request shape as
+ * uploadCandidateAttachment (JSON body, `file` is a hosted URL, not raw
+ * bytes), just a different path:
+ * developers.manatal.com/reference/matches_attachments_create
+ */
+async function uploadMatchAttachment({ token, matchId, fileUrl, label }) {
+  const url = `${API_ROOT}/matches/${matchId}/attachments/`;
+  const res = await requestWithRetry(url, {
+    method: 'POST',
+    headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: label || 'Attachment', file: fileUrl }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Manatal match attachment upload failed for "${label}" (${res.status}): ${text.slice(0, 500)}`);
+  }
+  return res.json();
+}
+
+module.exports = {
+  applyToJob,
+  findCandidateByEmail,
+  findMostRecentMatch,
+  getCandidate,
+  patchCandidateCustomFields,
+  uploadCandidateAttachment,
+  uploadMatchAttachment,
+};

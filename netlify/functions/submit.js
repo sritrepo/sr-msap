@@ -82,8 +82,8 @@ exports.handler = async function (event) {
   }
 
   try {
-    const { candidateId, jobId } = await processSubmission(parsed);
-    console.log(`Manatal candidate ${candidateId} applied to job ${jobId}`);
+    const { candidateId, jobId, matchId } = await processSubmission(parsed);
+    console.log(`Manatal candidate ${candidateId} applied to job ${jobId} (match ${matchId})`);
     return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ success: true }) };
   } catch (err) {
     console.error('Manatal submission failed, dead-lettering:', err.message);

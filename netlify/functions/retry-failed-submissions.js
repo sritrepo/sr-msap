@@ -49,9 +49,9 @@ async function retryOne(key) {
   try {
     const rawBody = Buffer.from(record.bodyBase64, 'base64');
     const parsed = await parseMultipart(rawBody, record.contentType);
-    const { candidateId, jobId } = await processSubmission(parsed, progress);
+    const { candidateId, jobId, matchId } = await processSubmission(parsed, progress);
 
-    console.log(`Retry succeeded for ${key} — candidate ${candidateId} applied to job ${jobId}`);
+    console.log(`Retry succeeded for ${key} — candidate ${candidateId} applied to job ${jobId} (match ${matchId})`);
     await deleteFailedSubmission(key);
   } catch (err) {
     const attempts = (record.attempts || 1) + 1;
