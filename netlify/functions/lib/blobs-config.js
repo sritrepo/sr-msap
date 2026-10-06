@@ -36,8 +36,17 @@ function getConfiguredStore(name) {
   const siteID = process.env.SITE_ID;
   const token = process.env.NETLIFY_BLOBS_TOKEN;
 
+  // consistency: 'strong' forces read-after-write consistency instead of
+  // Blobs' default "eventual" mode. Added Oct 5 2026 after a confirmed
+  // production failure: Manatal reported "Could not fetch the file from
+  // the provided URL (timeout)" when fetching a resume from
+  // get-attachment.js moments after file-hosting.js wrote it — classic
+  // write-then-immediately-read-from-elsewhere timing, and the exact
+  // scenario eventual consistency doesn't guarantee. Costs a little
+  // latency per call; worth it since a failed fetch here currently
+  // dead-letters the whole submission.
   if (siteID && token) {
-    return getStore({ name, siteID, token });
+    return getStore({ name, siteID, token, consistency: 'strong' });
   }
 
   // Fall back to auto-detection in case it starts working (e.g. local
@@ -49,7 +58,7 @@ function getConfiguredStore(name) {
       `getConfiguredStore("${name}"): NETLIFY_BLOBS_TOKEN is not set — falling back to auto-detection, which is what was failing before. Set NETLIFY_BLOBS_TOKEN in your Netlify environment variables.`
     );
   }
-  return getStore(name);
+  return getStore({ name, consistency: 'strong' });
 }
 
 module.exports = { getConfiguredStore };

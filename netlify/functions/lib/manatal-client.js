@@ -257,19 +257,44 @@ async function patchCandidateCustomFields({ token, candidateId, customFields }) 
  * the file is already hosted at (see lib/file-hosting.js) — this
  * function does not upload bytes itself.
  */
+// Manatal fetches `file` from OUR hosting URL (get-attachment.js) when an
+// attachment is created — it's not a bytes upload, just a URL we hand
+// over. Confirmed in production (Oct 5 2026) that this fetch can time out
+// on Manatal's side, specifically: {"file":{"detail":"Could not fetch the
+// file from the provided URL (timeout)."}}. This is a 400 (so
+// requestWithRetry's generic 429/5xx retry never catches it), and it's
+// almost certainly our own hosting endpoint being slow to answer (Blobs
+// propagation lag / cold start) rather than a real bad request — so it's
+// retried a few times here specifically, instead of broadening
+// requestWithRetry to retry all 400s (a genuinely malformed request, e.g.
+// a bad file type, SHOULD fail immediately, not waste three attempts).
+const FETCH_TIMEOUT_PATTERN = /could not fetch the file from the provided url/i;
+
+async function postAttachment(url, token, name, fileUrl, context) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const res = await requestWithRetry(url, {
+      method: 'POST',
+      headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name || 'Attachment', file: fileUrl }),
+    });
+
+    if (res.ok) return res.json();
+
+    const text = await res.text();
+    const isFetchTimeout = res.status === 400 && FETCH_TIMEOUT_PATTERN.test(text);
+
+    if (isFetchTimeout && attempt < 3) {
+      await sleep(600 * attempt);
+      continue;
+    }
+
+    throw new Error(`${context} (${res.status}): ${text.slice(0, 500)}`);
+  }
+}
+
 async function uploadCandidateAttachment({ token, candidateId, fileUrl, label }) {
   const url = `${API_ROOT}/candidates/${candidateId}/attachments/`;
-  const res = await requestWithRetry(url, {
-    method: 'POST',
-    headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: label || 'Attachment', file: fileUrl }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Manatal attachment upload failed for "${label}" (${res.status}): ${text.slice(0, 500)}`);
-  }
-  return res.json();
+  return postAttachment(url, token, label, fileUrl, `Manatal attachment upload failed for "${label}"`);
 }
 
 /**
@@ -282,17 +307,7 @@ async function uploadCandidateAttachment({ token, candidateId, fileUrl, label })
  */
 async function uploadMatchAttachment({ token, matchId, fileUrl, label }) {
   const url = `${API_ROOT}/matches/${matchId}/attachments/`;
-  const res = await requestWithRetry(url, {
-    method: 'POST',
-    headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: label || 'Attachment', file: fileUrl }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Manatal match attachment upload failed for "${label}" (${res.status}): ${text.slice(0, 500)}`);
-  }
-  return res.json();
+  return postAttachment(url, token, label, fileUrl, `Manatal match attachment upload failed for "${label}"`);
 }
 
 module.exports = {
