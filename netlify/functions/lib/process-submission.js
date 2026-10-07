@@ -13,7 +13,7 @@ const {
   uploadMatchAttachment,
 } = require('./manatal-client');
 const { validateAndNormalizeFile } = require('./file-validator');
-const { hostAttachment } = require('./file-hosting');
+const { hostAttachment, deleteHostedAttachment } = require('./file-hosting');
 
 const MANATAL_TOKEN = process.env.MANATAL_API_TOKEN;
 const CLIENT_SLUG = process.env.MANATAL_CLIENT_SLUG || 'sphererocketva';
@@ -318,10 +318,15 @@ async function processSubmission({ fields, files }, progress = {}) {
         const normalized = await validateAndNormalizeFile(file);
         // 2. Host the (possibly converted) bytes publicly — Manatal's
         //    attachment endpoint requires a URL, not raw bytes.
-        const fileUrl = await hostAttachment(normalized);
+        const { url: fileUrl, key: hostedKey } = await hostAttachment(normalized);
         // 3. Send the URL, not the file itself.
         await uploadMatchAttachment({ token: MANATAL_TOKEN, matchId, fileUrl, label });
         progress.attachments.push(label);
+        // 4. Manatal has confirmed it fetched the file — our hosted copy
+        //    has no further purpose. Delete it now rather than leaving it
+        //    publicly reachable; cleanup-hosted-attachments.js (3h purge)
+        //    is only the fallback for whatever slips past this.
+        await deleteHostedAttachment(hostedKey);
       }
     }
 

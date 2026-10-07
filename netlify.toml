@@ -301,6 +301,9 @@
 
 [functions."retry-failed-submissions"]
   schedule = "*/15 * * * *"
+
+[functions."cleanup-hosted-attachments"]
+  schedule = "0 * * * *"
   
 [[headers]]
   for = "/*"

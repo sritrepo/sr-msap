@@ -21,7 +21,12 @@ const SITE_URL =
 
 /**
  * @param {{filename: string, contentType: string, buffer: Buffer}} file
- * @returns {Promise<string>} public URL Manatal can fetch the file from
+ * @returns {Promise<{url: string, key: string}>} public URL Manatal can
+ *   fetch the file from, plus the storage key so the caller can delete it
+ *   immediately once Manatal confirms it has successfully fetched the
+ *   file (see deleteHostedAttachment below) — no reason to keep a copy
+ *   around once Manatal has its own. cleanup-hosted-attachments.js is
+ *   the safety net for anything that doesn't get explicitly cleaned up.
  */
 async function hostAttachment(file) {
   const store = getConfiguredStore(STORE_NAME);
@@ -31,7 +36,28 @@ async function hostAttachment(file) {
     metadata: { contentType: file.contentType, filename: file.filename },
   });
 
-  return `${SITE_URL}/.netlify/functions/get-attachment?key=${encodeURIComponent(key)}`;
+  return {
+    url: `${SITE_URL}/.netlify/functions/get-attachment?key=${encodeURIComponent(key)}`,
+    key,
+  };
 }
 
-module.exports = { hostAttachment, STORE_NAME };
+/**
+ * Deletes a hosted file immediately after Manatal has confirmed it
+ * successfully fetched it (Oct 6 2026 — candidate-attachments previously
+ * had no cleanup at all, meaning every resume/gov ID/etc. that ever
+ * passed through stayed publicly hosted forever). Best-effort: a failed
+ * delete here isn't worth failing the whole submission over, since the
+ * 3-hour scheduled purge (cleanup-hosted-attachments.js) will catch it
+ * anyway.
+ */
+async function deleteHostedAttachment(key) {
+  try {
+    const store = getConfiguredStore(STORE_NAME);
+    await store.delete(key);
+  } catch (err) {
+    console.warn(`deleteHostedAttachment: failed to delete "${key}" — will be caught by the 3h scheduled purge instead. ${err.message}`);
+  }
+}
+
+module.exports = { hostAttachment, deleteHostedAttachment, STORE_NAME };
